@@ -63,7 +63,7 @@ claude /my-custom-    # If you have custom commands in ~/.claude/commands/
 
 ## Custom Commands
 
-The script automatically discovers custom commands from `~/.claude/commands/` directory. Any `.md` file in that directory will be available for completion (with the `.md` extension removed).
+The script automatically discovers custom commands from `~/.claude/commands/` directory. Any `.md` file in that directory will be available for completion.
 
 ## License
 

@@ -16,7 +16,7 @@ Bash completion script for Claude Code CLI, providing tab completion for both bu
 
 ## Installation
 
-### Method 1: Source in `.bashrc` (Recommended)
+### Method 1: Source in `.bashrc`
 
 1. Clone or download this repository:
 
@@ -60,16 +60,6 @@ claude /con    # Completes to /config, /context, /cost, etc.
 # Works with both built-in and custom commands
 claude /my-custom-    # If you have custom commands in ~/.claude/commands/
 ```
-
-## Built-in Commands
-
-The script supports completion for the following built-in Claude CLI commands:
-
-- `/add-dir`, `/agents`, `/bashes`, `/bug`, `/clear`, `/compact`, `/config`, `/context`, `/cost`, `/doctor`
-- `/exit`, `/export`, `/help`, `/hooks`, `/init`, `/login`, `/logout`, `/mcp`, `/memory`
-- `/model`, `/output-style`, `/permissions`, `/pr_comments`, `/privacy-settings`
-- `/review`, `/sandbox`, `/rewind`, `/status`, `/statusline`, `/terminal-setup`
-- `/todos`, `/usage`, `/vim`
 
 ## Custom Commands
 

@@ -1,17 +1,17 @@
 # Claude Bash Completion
 
-Bash completion script for Claude CLI, providing tab completion for both built-in slash commands and custom commands.
+Bash completion script for Claude Code CLI, providing tab completion for both built-in slash commands and custom commands.
 
 ## Features
 
-- Auto-completion for all Claude CLI built-in slash commands (26 commands)
+- Auto-completion for all Claude Code built-in slash commands (26 commands)
 - Auto-completion for custom commands from `~/.claude/commands/` directory
 - Smart detection: completions only trigger when input starts with `/`
 
 ## Requirements
 
 - Bash shell
-- [Claude CLI](https://github.com/anthropics/claude-code) installed and configured
+- [Claude Code](https://github.com/anthropics/claude-code) installed and configured
 - `bash-completion` package (usually pre-installed on most systems)
 
 ## Installation
@@ -77,8 +77,4 @@ The script automatically discovers custom commands from `~/.claude/commands/` di
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit issues or pull requests.
+MIT License

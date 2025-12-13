@@ -26,10 +26,10 @@ _claude_bash_completion()
   # Built-in slash commands
   builtin_commands=(
     /add-dir /agents /bashes /bug /clear /compact /config /context /cost /doctor
-    /exit /export /help /hooks /init /login /logout /mcp /memory
-    /model /output-style /permissions /pr_comments /privacy-settings
-    /review /sandbox /rewind /status /statusline /terminal-setup
-    /todos /usage /vim
+    /exit /export /help /hooks /ide /init /install-github-app /login /logout /mcp
+    /memory /model /output-style /permissions /plugin /pr-comments /privacy-settings
+    /release-notes /resume /review /rewind /sandbox /security-review /stats /status
+    /statusline /terminal-setup /todos /usage /vim
   )
 
   # If current word starts with /, complete slash commands

@@ -21,7 +21,7 @@ Bash completion script for Claude Code CLI, providing tab completion for both bu
 1. Clone or download this repository:
 
 ```bash
-git clone https://github.com/jlhg/claude-bash-completion.git
+git clone https://github.com/cldotdev/claude-bash-completion.git
 ```
 
 2. Add the following line to your `~/.bashrc`:

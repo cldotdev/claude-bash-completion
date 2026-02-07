@@ -38,36 +38,61 @@ claude() {
 
 _claude_bash_completion()
 {
-  local cur prev opts commands_dir custom_commands
+  local cur prev
   local -a builtin_commands
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
-  commands_dir="$HOME/.claude/commands"
 
-  # Built-in slash commands
+  # Built-in slash commands (48 commands)
   builtin_commands=(
-    /add-dir /agents /bashes /bug /clear /compact /config /context /cost /doctor
-    /exit /export /help /hooks /ide /init /install-github-app /login /logout /mcp
-    /memory /model /output-style /permissions /plan /plugin /pr-comments /privacy-settings
-    /release-notes /remote-env /rename /resume /review /rewind /sandbox /security-review
-    /stats /status /statusline /teleport /terminal-setup /theme /todos /usage /vim
+    /add-dir /agents /bashes /bug /clear /compact /config /context /copy /cost
+    /debug /doctor /exit /export /help /hooks /ide /init /install-github-app /login
+    /logout /mcp /memory /model /output-style /permissions /plan /plugin /pr-comments
+    /privacy-settings /release-notes /remote-env /rename /resume /review /rewind
+    /sandbox /security-review /stats /status /statusline /tasks /teleport
+    /terminal-setup /theme /todos /usage /vim
   )
 
   # If current word starts with /, complete slash commands
   if [[ "$cur" == /* ]]; then
-    # Get custom commands from ~/.claude/commands/ directory (supports subdirectories)
+    local commands_dir="$HOME/.claude/commands"
+    local skills_dir="$HOME/.claude/skills"
+    local project_root project_commands_dir project_skills_dir
+    local custom_commands="" personal_skills="" project_commands="" project_skills=""
+
+    # Detect project root via git
+    project_root=$(git rev-parse --show-toplevel 2>/dev/null)
+
+    # Personal custom commands: ~/.claude/commands/*.md
     # e.g., ~/.claude/commands/dev/rails.md -> /dev:rails
     custom_commands=$(find -L "$commands_dir" -type f -name "*.md" 2>/dev/null | \
-                      sed "s|^$commands_dir/||" | \
-                      sed 's/\.md$//' | \
-                      sed 's|/|:|g' | \
-                      sed 's/^/\//')
+                      sed -e "s|^$commands_dir/||" -e 's/\.md$//' -e 's|/|:|g' -e 's/^/\//')
 
-    # Combine built-in and custom commands
-    opts="${builtin_commands[*]} $custom_commands"
+    # Personal skills: ~/.claude/skills/<name>/SKILL.md
+    # e.g., ~/.claude/skills/dev/rails/SKILL.md -> /dev:rails
+    personal_skills=$(find -L "$skills_dir" -type f -name "SKILL.md" 2>/dev/null | \
+                      sed -e "s|^$skills_dir/||" -e 's|/SKILL\.md$||' -e 's|/|:|g' -e 's/^/\//')
 
-    COMPREPLY=( $(compgen -W "$opts" -- ${cur}) )
+    # Project-level commands and skills (if inside a git repo)
+    if [[ -n "$project_root" ]]; then
+      project_commands_dir="$project_root/.claude/commands"
+      project_skills_dir="$project_root/.claude/skills"
+
+      # Project commands: <root>/.claude/commands/*.md
+      project_commands=$(find -L "$project_commands_dir" -type f -name "*.md" 2>/dev/null | \
+                         sed -e "s|^$project_commands_dir/||" -e 's/\.md$//' -e 's|/|:|g' -e 's/^/\//')
+
+      # Project skills: <root>/.claude/skills/<name>/SKILL.md
+      project_skills=$(find -L "$project_skills_dir" -type f -name "SKILL.md" 2>/dev/null | \
+                       sed -e "s|^$project_skills_dir/||" -e 's|/SKILL\.md$||' -e 's|/|:|g' -e 's/^/\//')
+    fi
+
+    # Combine all sources and deduplicate
+    local all_commands
+    all_commands=$(printf '%s\n' "${builtin_commands[@]}" $custom_commands $personal_skills $project_commands $project_skills | sort -u)
+
+    COMPREPLY=( $(compgen -W "$all_commands" -- ${cur}) )
   fi
 
   return 0

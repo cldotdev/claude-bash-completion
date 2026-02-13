@@ -43,6 +43,88 @@ _claude_bash_completion()
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
 
+  # --- CLI flag value completions ---
+  case "$prev" in
+    --model)
+      COMPREPLY=( $(compgen -W "sonnet opus haiku claude-sonnet-4-5-20250929 claude-opus-4-6 claude-haiku-4-5-20251001" -- "$cur") )
+      return 0
+      ;;
+    --output-format)
+      COMPREPLY=( $(compgen -W "text json stream-json" -- "$cur") )
+      return 0
+      ;;
+    --input-format)
+      COMPREPLY=( $(compgen -W "text stream-json" -- "$cur") )
+      return 0
+      ;;
+    --permission-mode)
+      COMPREPLY=( $(compgen -W "default acceptEdits plan dontAsk bypassPermissions" -- "$cur") )
+      return 0
+      ;;
+    --fallback-model)
+      COMPREPLY=( $(compgen -W "sonnet opus haiku" -- "$cur") )
+      return 0
+      ;;
+    --mcp-config|--system-prompt-file|--settings|--plugin-dir|--add-dir)
+      COMPREPLY=( $(compgen -f -- "$cur") )
+      return 0
+      ;;
+  esac
+
+  # --- CLI flags (when word starts with -) ---
+  if [[ "$cur" == -* ]]; then
+    local flags="
+      --add-dir
+      --agent
+      --agents
+      --allowedTools
+      --append-system-prompt
+      --betas
+      --continue
+      --dangerously-skip-permissions
+      --debug
+      --disallowedTools
+      --fallback-model
+      --fork-session
+      --ide
+      --include-partial-messages
+      --input-format
+      --json-schema
+      --max-turns
+      --mcp-config
+      --model
+      --output-format
+      --permission-mode
+      --permission-prompt-tool
+      --plugin-dir
+      --print
+      --resume
+      --session-id
+      --setting-sources
+      --settings
+      --strict-mcp-config
+      --system-prompt
+      --system-prompt-file
+      --tools
+      --verbose
+      --version
+      -c
+      -p
+      -r
+      -v
+    "
+    COMPREPLY=( $(compgen -W "$flags" -- "$cur") )
+    return 0
+  fi
+
+  # --- Subcommands (first arg, not a flag or slash) ---
+  if [[ "$COMP_CWORD" -eq 1 && "$cur" != /* ]]; then
+    COMPREPLY=( $(compgen -W "update mcp" -- "$cur") )
+    # Don't return — fall through so if nothing matches, no stale completions
+    [[ ${#COMPREPLY[@]} -gt 0 ]] && return 0
+  fi
+
+  # --- Slash commands (when word starts with /) ---
   # Built-in slash commands (55 commands as of v2.1.63)
   builtin_commands=(
     /add-dir /agents /bashes /batch /bug /clear /compact /config /context /copy /cost
@@ -97,4 +179,4 @@ _claude_bash_completion()
 
   return 0
 }
-complete -F _claude_bash_completion claude
+complete -o default -F _claude_bash_completion claude

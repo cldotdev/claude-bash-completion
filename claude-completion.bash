@@ -38,20 +38,20 @@ claude() {
 
 _claude_bash_completion()
 {
-  local cur prev
+  local cur
   local -a builtin_commands
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
-  prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-  # Built-in slash commands (48 commands)
+  # Built-in slash commands (53 commands)
   builtin_commands=(
     /add-dir /agents /bashes /bug /clear /compact /config /context /copy /cost
-    /debug /doctor /exit /export /help /hooks /ide /init /install-github-app /login
-    /logout /mcp /memory /model /output-style /permissions /plan /plugin /pr-comments
-    /privacy-settings /release-notes /remote-env /rename /resume /review /rewind
-    /sandbox /security-review /stats /status /statusline /tasks /teleport
-    /terminal-setup /theme /todos /usage /vim
+    /debug /desktop /doctor /exit /export /extra-usage /fast /fork /help /hooks
+    /ide /init /install-github-app /login /logout /mcp /memory /model /output-style
+    /permissions /plan /plugin /pr-comments /privacy-settings /release-notes
+    /remote-env /rename /resume /review /rewind /sandbox /security-review /stats
+    /status /statusline /tasks /teleport /terminal-setup /theme /todos /usage /vim
+    /worktree
   )
 
   # If current word starts with /, complete slash commands
@@ -90,9 +90,9 @@ _claude_bash_completion()
 
     # Combine all sources and deduplicate
     local all_commands
-    all_commands=$(printf '%s\n' "${builtin_commands[@]}" $custom_commands $personal_skills $project_commands $project_skills | sort -u)
+    all_commands=$(printf '%s\n' "${builtin_commands[@]}" "$custom_commands" "$personal_skills" "$project_commands" "$project_skills" | sort -u)
 
-    COMPREPLY=( $(compgen -W "$all_commands" -- ${cur}) )
+    mapfile -t COMPREPLY < <(compgen -W "$all_commands" -- "${cur}")
   fi
 
   return 0

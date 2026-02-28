@@ -43,15 +43,15 @@ _claude_bash_completion()
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
 
-  # Built-in slash commands (53 commands)
+  # Built-in slash commands (55 commands as of v2.1.63)
   builtin_commands=(
-    /add-dir /agents /bashes /bug /clear /compact /config /context /copy /cost
+    /add-dir /agents /bashes /batch /bug /clear /compact /config /context /copy /cost
     /debug /desktop /doctor /exit /export /extra-usage /fast /fork /help /hooks
     /ide /init /install-github-app /login /logout /mcp /memory /model /output-style
     /permissions /plan /plugin /pr-comments /privacy-settings /release-notes
-    /remote-env /rename /resume /review /rewind /sandbox /security-review /stats
-    /status /statusline /tasks /teleport /terminal-setup /theme /todos /usage /vim
-    /worktree
+    /remote-env /rename /resume /review /rewind /sandbox /security-review /simplify
+    /stats /status /statusline /tasks /teleport /terminal-setup /theme /todos /usage
+    /vim /worktree
   )
 
   # If current word starts with /, complete slash commands

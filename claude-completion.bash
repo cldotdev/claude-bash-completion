@@ -43,15 +43,18 @@ _claude_bash_completion()
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
 
-  # Built-in slash commands (55 commands as of v2.1.63)
+  # Built-in slash commands (77 commands as of v2.1.71)
   builtin_commands=(
-    /add-dir /agents /bashes /batch /bug /clear /compact /config /context /copy /cost
-    /debug /desktop /doctor /exit /export /extra-usage /fast /fork /help /hooks
-    /ide /init /install-github-app /login /logout /mcp /memory /model /output-style
-    /permissions /plan /plugin /pr-comments /privacy-settings /release-notes
-    /remote-env /rename /resume /review /rewind /sandbox /security-review /simplify
-    /stats /status /statusline /tasks /teleport /terminal-setup /theme /todos /usage
-    /vim /worktree
+    /add-dir /agents /allowed-tools /android /app /batch /bug /checkpoint /chrome
+    /claude-api /clear /compact /config /context /continue /copy /cost /debug
+    /desktop /diff /doctor /exit /export /extra-usage /fast /feedback /fork /help
+    /hooks /ide /init /insights /install-github-app /install-slack-app /ios
+    /keybindings /login /logout /loop /mcp /memory /mobile /model /new
+    /output-style /passes /permissions /plan /plugin /pr-comments /privacy-settings
+    /quit /rc /release-notes /reload-plugins /remote-control /remote-env /rename
+    /reset /resume /review /rewind /sandbox /security-review /settings /simplify
+    /skills /stats /status /statusline /stickers /tasks /terminal-setup /theme
+    /upgrade /usage /vim
   )
 
   # If current word starts with /, complete slash commands

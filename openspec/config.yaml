@@ -1,8 +1,9 @@
 schema: spec-driven
 context: |
-  Design: DRY, KISS, YAGNI, SOLID, SoC, Law of Demeter, Fail Fast
-  No backward compatibility unless explicitly specified
-  Check existing helpers/utilities before implementing new logic
+  - Design: DRY, KISS, YAGNI, SOLID, SoC, Law of Demeter, Fail Fast
+  - No backward compatibility unless explicitly specified
+  - Check existing helpers/utilities before implementing new logic
+  - Read README.md first: extract exact test/dev commands (e.g. docker compose wrappers) and use them throughout
 
   Development standards:
 
@@ -59,8 +60,10 @@ rules:
     - First task: read README.md for development/test environment setup
     - Follow TDD flow: write test (red) -> implement (green) -> refactor
     - Run changed file tests first, then full suite
-    - Include ShellCheck scanning (shellcheck -x)
-    - Run bats with --formatter pretty locally, TAP for CI
+    - Verification (run in order, skip unavailable tools)
+    - Test -- bats --formatter pretty (TAP for CI)
+    - Lint -- shellcheck -x <scripts>
+    - Security -- gitleaks detect --no-banner
   proposal:
     - Identify affected scripts and shared functions
     - Consider backward compatibility of CLI interfaces
@@ -70,23 +73,6 @@ rules:
     - Address error handling and cleanup strategy
     - Consider portability requirements (POSIX vs bash-specific)
     - Include security considerations (input validation, no eval on user input)
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
 
 _templates:
   - bash

@@ -4,7 +4,7 @@ Bash completion script for Claude Code CLI, providing tab completion for both bu
 
 ## Features
 
-- Auto-completion for all Claude Code built-in slash commands (77 commands as of v2.1.71)
+- Auto-completion for all Claude Code built-in slash commands (79 commands as of v2.1.76)
 - Auto-completion for custom commands and skills from personal and project directories
 - Smart detection: completions only trigger when input starts with `/`
 

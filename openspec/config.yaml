@@ -57,8 +57,8 @@ rules:
     - Reference existing patterns before creating new ones
     - Include edge cases for empty input, missing files, permission errors
   tasks:
-    - First task: read README.md for development/test environment setup
-    - Follow TDD flow: write test (red) -> implement (green) -> refactor
+    - "First task: read README.md for development/test environment setup"
+    - "Follow TDD flow: write test (red) -> implement (green) -> refactor"
     - Run changed file tests first, then full suite
     - Verification (run in order, skip unavailable tools)
     - Test -- bats --formatter pretty (TAP for CI)

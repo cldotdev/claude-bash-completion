@@ -43,7 +43,7 @@ _claude_bash_completion()
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
 
-  # Built-in slash commands (81 commands as of v2.1.81)
+  # Built-in slash commands (82 commands as of v2.1.84)
   builtin_commands=(
     /add-dir /agents /allowed-tools /android /app /batch /branch /btw /bug
     /checkpoint /chrome /claude-api /clear /color /compact /config /context
@@ -53,7 +53,7 @@ _claude_bash_completion()
     /mcp /memory /mobile /model /new /passes /permissions /plan /plugin
     /pr-comments /privacy-settings /quit /rc /release-notes /reload-plugins
     /remote-control /remote-env /rename /reset /resume /review /rewind /sandbox
-    /security-review /settings /simplify /skills /stats /status /statusline
+    /schedule /security-review /settings /simplify /skills /stats /status /statusline
     /stickers /tasks /terminal-setup /theme /upgrade /usage /vim /voice
   )
 

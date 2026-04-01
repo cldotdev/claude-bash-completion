@@ -43,18 +43,21 @@ _claude_bash_completion()
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
 
-  # Built-in slash commands (82 commands as of v2.1.84)
+  # Built-in slash commands (101 commands as of v2.1.89)
   builtin_commands=(
-    /add-dir /agents /allowed-tools /android /app /batch /branch /btw /bug
-    /checkpoint /chrome /claude-api /clear /color /compact /config /context
-    /continue /copy /cost /debug /desktop /diff /doctor /effort /exit /export
-    /extra-usage /fast /feedback /fork /help /hooks /ide /init /insights
-    /install-github-app /install-slack-app /ios /keybindings /login /logout /loop
-    /mcp /memory /mobile /model /new /passes /permissions /plan /plugin
+    /add-dir /advisor /agents /alias /allowed-tools /android /app /autocompact
+    /batch /bashes /branch /brief /btw /buddy /bug /checkpoint /chrome
+    /claude-api /claude-in-chrome /clear /color /commit /commit-push-pr /compact
+    /config /context /continue /copy /cost /debug /desktop /diff /doctor
+    /effort /exit /export /extra-usage /fast /feedback /files /fork /help /hooks
+    /ide /init /init-verifiers /insights /install /install-github-app
+    /install-slack-app /ios /keybindings /login /logout /loop /marketplace /mcp
+    /memory /mobile /model /new /passes /permissions /plan /plugin /plugins
     /pr-comments /privacy-settings /quit /rc /release-notes /reload-plugins
-    /remote-control /remote-env /rename /reset /resume /review /rewind /sandbox
-    /schedule /security-review /settings /simplify /skills /stats /status /statusline
-    /stickers /tasks /terminal-setup /theme /upgrade /usage /vim /voice
+    /remote /remote-control /remote-env /rename /reset /resume /review /rewind
+    /sandbox /schedule /security-review /settings /simplify /skills /stats
+    /status /statusline /stickers /tasks /terminal-setup /theme /think-back
+    /ultrareview /update-config /upgrade /usage /vim /voice /web-setup
   )
 
   # If current word starts with /, complete slash commands

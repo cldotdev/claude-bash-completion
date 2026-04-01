@@ -6,8 +6,9 @@ How to update the `builtin_commands` array when a new Claude Code version is rel
 
 ### Source of Truth
 
-- Built-in commands: https://docs.anthropic.com/en/docs/claude-code/commands
-- Bundled skills: https://docs.anthropic.com/en/docs/claude-code/skills#bundled-skills
+- Primary: <https://docs.anthropic.com/en/docs/claude-code/commands>
+- Bundled skills: <https://docs.anthropic.com/en/docs/claude-code/skills#bundled-skills>
+- Supplementary: the installed Claude binary (docs can lag behind releases)
 
 ### Check Current Version
 
@@ -17,13 +18,13 @@ claude --version
 
 Compare with the version in `claude-completion.bash` comment (line starting with `# Built-in slash commands`).
 
-### Diff Against Docs
+### Diff
 
 ```bash
 ./scripts/diff-commands.sh
 ```
 
-The script fetches the latest commands and bundled skills from the official docs, compares them against `builtin_commands` in `claude-completion.bash`, and prints new/removed commands.
+The script fetches the latest commands and bundled skills from the official docs, compares them against `builtin_commands` in `claude-completion.bash`, and prints new/removed commands. It also extracts candidate commands from the installed Claude binary as a supplementary check (the docs page can lag behind releases). Binary results may have false positives/negatives and should be verified manually.
 
 ### Cross-reference Aliases
 
@@ -38,7 +39,7 @@ The docs page lists aliases inline (e.g., "Aliases: `/reset`, `/new`"). Verify a
 ### Verify
 
 - `shellcheck claude-completion.bash` — no warnings.
-- Count commands matches the comment: `sed -n '/builtin_commands=(/,/)/p' claude-completion.bash | grep -oP '/[a-z][-a-z]*' | wc -l`
+- Command count matches the comment: `sed -n '/builtin_commands=(/,/)/p' claude-completion.bash | grep -oP '/[a-z][-a-z]*' | wc -l`
 - Source the script and confirm `complete -p claude` registers the function.
 
 ### Notes

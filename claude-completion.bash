@@ -36,6 +36,40 @@ claude() {
   fi
 }
 
+# Extract the name field from YAML frontmatter (between --- markers).
+# Returns empty string if no frontmatter or no name field found.
+_claude_frontmatter_name() {
+  local file="$1"
+  [[ -f "$file" ]] || return 0
+  sed -n '
+    1{/^---$/!q}
+    2,/^---$/{
+      /^name: */{
+        s/^name: *//
+        s/^["'"'"']//
+        s/["'"'"']$//
+        p
+        q
+      }
+    }
+  ' "$file"
+}
+
+# Discover custom commands/skills from a directory.
+# Uses frontmatter name if available, falls back to path-based derivation.
+# Args: base_dir find_pattern strip_suffix_sed
+_claude_discover_commands() {
+  local base_dir="$1" find_pattern="$2" strip_suffix="$3"
+  find -L "$base_dir" -type f -name "$find_pattern" 2>/dev/null | while read -r file; do
+    name=$(_claude_frontmatter_name "$file")
+    if [[ -n "$name" ]]; then
+      echo "/$name"
+    else
+      echo "$file" | sed -e "s|^$base_dir/||" -e "$strip_suffix" -e 's|/|:|g' -e 's/^/\//'
+    fi
+  done
+}
+
 _claude_bash_completion()
 {
   local cur
@@ -70,28 +104,16 @@ _claude_bash_completion()
     # Detect project root via git
     project_root=$(git rev-parse --show-toplevel 2>/dev/null)
 
-    # Personal custom commands: ~/.claude/commands/*.md
-    # e.g., ~/.claude/commands/dev/rails.md -> /dev:rails
-    custom_commands=$(find -L "$commands_dir" -type f -name "*.md" 2>/dev/null | \
-                      sed -e "s|^$commands_dir/||" -e 's/\.md$//' -e 's|/|:|g' -e 's/^/\//')
-
-    # Personal skills: ~/.claude/skills/<name>/SKILL.md
-    # e.g., ~/.claude/skills/dev/rails/SKILL.md -> /dev:rails
-    personal_skills=$(find -L "$skills_dir" -type f -name "SKILL.md" 2>/dev/null | \
-                      sed -e "s|^$skills_dir/||" -e 's|/SKILL\.md$||' -e 's|/|:|g' -e 's/^/\//')
+    custom_commands=$(_claude_discover_commands "$commands_dir" "*.md" 's/\.md$//')
+    personal_skills=$(_claude_discover_commands "$skills_dir" "SKILL.md" 's|/SKILL\.md$||')
 
     # Project-level commands and skills (if inside a git repo)
     if [[ -n "$project_root" ]]; then
       project_commands_dir="$project_root/.claude/commands"
       project_skills_dir="$project_root/.claude/skills"
 
-      # Project commands: <root>/.claude/commands/*.md
-      project_commands=$(find -L "$project_commands_dir" -type f -name "*.md" 2>/dev/null | \
-                         sed -e "s|^$project_commands_dir/||" -e 's/\.md$//' -e 's|/|:|g' -e 's/^/\//')
-
-      # Project skills: <root>/.claude/skills/<name>/SKILL.md
-      project_skills=$(find -L "$project_skills_dir" -type f -name "SKILL.md" 2>/dev/null | \
-                       sed -e "s|^$project_skills_dir/||" -e 's|/SKILL\.md$||' -e 's|/|:|g' -e 's/^/\//')
+      project_commands=$(_claude_discover_commands "$project_commands_dir" "*.md" 's/\.md$//')
+      project_skills=$(_claude_discover_commands "$project_skills_dir" "SKILL.md" 's|/SKILL\.md$||')
     fi
 
     # Combine all sources and deduplicate

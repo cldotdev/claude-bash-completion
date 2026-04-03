@@ -1,120 +1,168 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Compare builtin_commands in claude-completion.bash against the official docs
-# and the installed Claude binary.
+# Compare builtin_commands in claude-completion.bash against commands
+# extracted from the installed Claude binary.
 # Outputs new and removed commands so you know what to update.
+#
+# The Claude binary is a Bun-compiled executable with embedded JS.
+# Each built-in command is defined as a JS object with fields:
+#   type:"local"|"local-jsx"|"prompt", name:"<cmd>", aliases:[...]
+#
+# When sourced with --source-only, exports extraction functions
+# for testing without executing main logic.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMPLETION_FILE="$SCRIPT_DIR/../claude-completion.bash"
 
-COMMANDS_URL="https://docs.anthropic.com/en/docs/claude-code/commands"
-SKILLS_URL="https://docs.anthropic.com/en/docs/claude-code/skills"
+# --- Extraction functions ---
 
-tmpdir="$(mktemp -d)"
-trap 'rm -rf "$tmpdir"' EXIT
+# Extract primary command names from type definitions.
+# Reads strings output from stdin.
+extract_primary_names() {
+  local input
+  input=$(cat)
 
-# --- Current commands from completion script ---
-sed -n '/builtin_commands=(/,/)/p' "$COMPLETION_FILE" \
-  | grep -oP '/[a-z][-a-z]*' | sort -u > "$tmpdir/current.txt"
+  {
+    # Pattern 1: type:"local|local-jsx|prompt"...name:"X"
+    echo "$input" \
+      | grep -oP 'type:"(local|local-jsx|prompt)"[^}]*?name:"([^"]+)"' \
+      | grep -oP '(?<=name:")[^"]+'
 
-current_count="$(wc -l < "$tmpdir/current.txt")"
+    # Pattern 2: name:"X"...type:"local|local-jsx|prompt"
+    echo "$input" \
+      | grep -oP 'name:"([-a-z]+)"[^;]*type:"(local|local-jsx|prompt)"' \
+      | grep -oP '(?<=name:")[^"]+'
 
-# --- Installed version ---
-claude_version=$(claude --version 2>/dev/null | head -1 || echo "unknown")
-echo "Installed: $claude_version"
-echo "Script: $current_count commands"
-echo
+    # Pattern 3: e3({name:"X",...}) bundled skill registration
+    echo "$input" \
+      | grep -oP '(?<=e3\(\{name:")[^"]+'
 
-# --- Resolve binary path early so we can start scanning in parallel ---
+    # Pattern 4: oZ7({name:"X",...}) marketplace-bundled skill registration
+    echo "$input" \
+      | grep -oP '(?<=oZ7\(\{name:")[^"]+'
+  } | sort -u
+}
+
+# Extract names that should be excluded (hidden, disabled, internal).
+# Reads strings output from stdin.
+extract_excluded_names() {
+  local input
+  input=$(cat)
+
+  {
+    # Static isHidden: true or !0
+    echo "$input" \
+      | grep -oP 'name:"[^"]+"[^}]*isHidden:(!0|true)' \
+      | grep -oP '(?<=name:")[^"]+'
+
+    # Static isEnabled: literal false only (not dynamic conditions)
+    echo "$input" \
+      | grep -oP 'name:"[^"]+"[^}]*isEnabled:\(\)=>(!1|false)([,}]|$)' \
+      | grep -oP '(?<=name:")[^"]+'
+
+    # Internal prefix
+    echo "mcp__"
+
+    # Internal UI command (not user-invocable)
+    echo "rate-limit-options"
+  } | sort -u
+}
+
+# Extract alias names from command definitions.
+# Reads strings output from stdin.
+# Handles both "name before aliases" and "aliases before name" patterns.
+# Only considers lines with command registration patterns to avoid
+# false positives from non-command code (e.g., highlight.js language defs).
+extract_aliases() {
+  local input
+  input=$(cat)
+
+  # Only consider lines with command registration patterns
+  local cmd_lines
+  cmd_lines=$(echo "$input" \
+    | grep -P 'type:"(local|local-jsx|prompt)"|e3\(\{|oZ7\(\{')
+
+  {
+    # Pattern 1: name:"X"...aliases:[...]
+    echo "$cmd_lines" \
+      | grep -oP 'name:"[-a-z]+"[^}]*?aliases:\[[^\]]+\]' \
+      | grep -oP '(?<=aliases:\[)[^\]]+' \
+      | grep -oP '[a-z][-a-z]*'
+
+    # Pattern 2: aliases:[...]...name:"X"
+    echo "$cmd_lines" \
+      | grep -oP 'aliases:\[[^\]]+\][^}]*?name:"[-a-z]+"' \
+      | grep -oP '(?<=aliases:\[)[^\]]+' \
+      | grep -oP '[a-z][-a-z]*'
+  } | sort -u
+}
+
+# Build final command list: primary names + aliases - exclusions.
+# Reads strings output from stdin.
+build_command_list() {
+  local input
+  input=$(cat)
+
+  local primary excluded aliases
+  primary=$(echo "$input" | extract_primary_names)
+  excluded=$(echo "$input" | extract_excluded_names)
+  aliases=$(echo "$input" | extract_aliases)
+
+  {
+    echo "$primary"
+    echo "$aliases"
+  } | sort -u | comm -23 - <(echo "$excluded")
+}
+
+# --- Source-only mode for testing ---
+if [[ "${1:-}" == "--source-only" ]]; then
+  # exit 0 is reachable when executed directly, not when sourced
+  # shellcheck disable=SC2317
+  return 0 2>/dev/null || exit 0
+fi
+
+# --- Main ---
+
 claude_bin=$(readlink -f "$(command -v claude)" 2>/dev/null || true)
 
-# --- Fetch docs and scan binary in parallel ---
-curl -sL "$COMMANDS_URL" \
-  | grep -oP '(?<=<code>)/[a-z][-a-z]*(?=[\s<])' \
-  | sort -u > "$tmpdir/docs_commands.txt" &
-
-curl -sL "$SKILLS_URL" \
-  | sed -n '/<table/,/<\/table>/p' | head -1 \
-  | grep -oP '(?<=<code>)/[a-z][-a-z]*(?=[\s<])' \
-  | sort -u > "$tmpdir/docs_skills.txt" &
-
-if [[ -n "$claude_bin" && -f "$claude_bin" ]]; then
-  # Filesystem paths
-  binary_exclude='/(bin|dev|emcc|etc|fish|lib|mnt|npx|opt|proc|sbin|sh|tmp|usr|var|zsh'
-  # Dynamic linker
-  binary_exclude+='|ld-linux-|ld-musl-'
-  # Shell / tool names
-  binary_exclude+='|bash|wrapper|worker'
-  # AWS Bedrock / Azure API paths
-  binary_exclude+='|all|allcompartments|async-invoke|authorize|automated-reasoning-policies'
-  binary_exclude+='|callback|change|claims|create|create-foundation-model-agreement'
-  binary_exclude+='|custom-models|dashboard|delete-foundation-model-agreement|devicecode'
-  binary_exclude+='|displaydns|evaluation-jobs|events|foundation-models|groups|guardrails'
-  binary_exclude+='|imported-models|inference-profiles|issue|logonid|metrics|model-copy-jobs'
-  binary_exclude+='|model-customization-jobs|model-import-jobs|model-invocation-job'
-  binary_exclude+='|model-invocation-jobs|prompt-routers|properties'
-  binary_exclude+='|provisioned-model-throughput|provisioned-model-throughputs'
-  binary_exclude+='|rate-limit-options|register|transfer|use-case-for-model-access|urlcache'
-  # Misc short noise
-  binary_exclude+='|fo|json|nh|path|priv|private|sse|stream|token|user|ve)$'
-
-  strings "$claude_bin" \
-    | grep -oP '(?<=")/[a-z][-a-z]+(?=")' \
-    | grep -vP "$binary_exclude" \
-    | sort -u > "$tmpdir/binary_all.txt" &
+if [[ -z "$claude_bin" || ! -f "$claude_bin" ]]; then
+  echo "Error: Claude binary not found." >&2
+  exit 1
 fi
 
-wait
+claude_version=$(claude --version 2>/dev/null | head -1 || echo "unknown")
 
-# --- Source 1: Official docs ---
-echo "=== Docs ==="
-sort -u "$tmpdir/docs_commands.txt" "$tmpdir/docs_skills.txt" > "$tmpdir/docs_all.txt"
+# Current commands from completion script
+current=$(sed -n '/builtin_commands=(/,/)/p' "$COMPLETION_FILE" \
+  | grep -oP '/[a-z][-a-z]*' | sed 's|^/||' | sort -u)
+current_count=$(echo "$current" | wc -l)
 
-docs_count="$(wc -l < "$tmpdir/docs_all.txt")"
-echo "Docs: $docs_count commands"
+# Extract from binary
+binary_commands=$(strings "$claude_bin" | build_command_list)
+binary_count=$(echo "$binary_commands" | wc -l)
 
-docs_new="$(comm -23 "$tmpdir/docs_all.txt" "$tmpdir/current.txt")"
-docs_removed="$(comm -13 "$tmpdir/docs_all.txt" "$tmpdir/current.txt")"
-
-if [[ -n "$docs_new" ]]; then
-  echo "New (in docs, not in script):"
-  echo "$docs_new"
-fi
-
-if [[ -n "$docs_removed" ]]; then
-  echo "Removed (in script, not in docs):"
-  echo "$docs_removed"
-fi
-
-if [[ -z "$docs_new" && -z "$docs_removed" ]]; then
-  echo "No differences."
-fi
+echo "Installed: $claude_version"
+echo "Script: $current_count commands"
+echo "Binary: $binary_count commands"
 echo
 
-# --- Source 2: Claude binary (supplementary) ---
-# The docs page can lag behind the actual binary. This section extracts
-# quoted slash-command-like strings from the compiled Bun binary as a
-# supplementary signal.  It has both false positives (non-command strings)
-# and false negatives (many commands are not stored as simple quoted strings).
-# Results should be verified manually.
+# Compare
+new_commands=$(comm -23 <(echo "$binary_commands") <(echo "$current"))
+removed_commands=$(comm -13 <(echo "$binary_commands") <(echo "$current"))
 
-echo "=== Binary (supplementary) ==="
-if [[ ! -f "$tmpdir/binary_all.txt" ]]; then
-  echo "Claude binary not found, skipping."
-  exit 0
+if [[ -n "$new_commands" ]]; then
+  echo "New (in binary, not in script):"
+  echo "$new_commands" | sed 's/^/  \//'
+  echo
 fi
 
-echo "Binary: $claude_bin"
+if [[ -n "$removed_commands" ]]; then
+  echo "Removed (in script, not in binary):"
+  echo "$removed_commands" | sed 's/^/  \//'
+  echo
+fi
 
-binary_count="$(wc -l < "$tmpdir/binary_all.txt")"
-binary_new="$(comm -23 "$tmpdir/binary_all.txt" "$tmpdir/current.txt")"
-
-echo "Candidates: $binary_count"
-
-if [[ -n "$binary_new" ]]; then
-  echo "New (in binary, not in script -- verify manually):"
-  echo "$binary_new"
-else
-  echo "No new candidates."
+if [[ -z "$new_commands" && -z "$removed_commands" ]]; then
+  echo "No differences."
 fi

@@ -6,9 +6,8 @@ How to update the `builtin_commands` array when a new Claude Code version is rel
 
 ### Source of Truth
 
-- Primary: <https://docs.anthropic.com/en/docs/claude-code/commands>
-- Bundled skills: <https://docs.anthropic.com/en/docs/claude-code/skills#bundled-skills>
-- Supplementary: the installed Claude binary (docs can lag behind releases)
+- Installed Claude binary (sole source)
+- The binary is a Bun-compiled executable with embedded JS; each built-in command is defined with `type:"local"/"local-jsx"/"prompt"` fields or registered via `e3()`/`oZ7()` calls
 
 ### Check Current Version
 
@@ -24,26 +23,24 @@ Compare with the version in `claude-completion.bash` comment (line starting with
 ./scripts/diff-commands.sh
 ```
 
-The script fetches the latest commands and bundled skills from the official docs, compares them against `builtin_commands` in `claude-completion.bash`, and prints new/removed commands. It also extracts candidate commands from the installed Claude binary as a supplementary check (the docs page can lag behind releases). Binary results may have false positives/negatives and should be verified manually.
-
-### Cross-reference Aliases
-
-The docs page lists aliases inline (e.g., "Aliases: `/reset`, `/new`"). Verify aliases are included in the script output.
+The script extracts command definitions from the installed Claude binary using structured type patterns, compares them against `builtin_commands` in `claude-completion.bash`, and prints new/removed commands. It automatically handles aliases and excludes hidden/internal commands.
 
 ### Apply Changes
 
 - Add new commands to `builtin_commands` array in alphabetical order.
+- Remove commands no longer in the binary.
 - Update the version comment: count and version number.
 - Update `README.md` with the new count and version.
 
 ### Verify
 
-- `shellcheck claude-completion.bash` — no warnings.
+- `shellcheck claude-completion.bash` -- no warnings.
 - Command count matches the comment: `sed -n '/builtin_commands=(/,/)/p' claude-completion.bash | grep -oP '/[a-z][-a-z]*' | wc -l`
 - Source the script and confirm `complete -p claude` registers the function.
 
 ### Notes
 
-- The docs commands page includes both built-in commands and some bundled skills in its table. The skills page has the authoritative bundled skills list.
-- Aliases (e.g., `/bug` for `/feedback`) are listed in the command table and should be included for discoverability.
-- Some commands are platform/plan-specific (e.g., `/desktop`, `/upgrade`). Include all for universal completion.
+- The binary extraction pattern depends on the Bun-compiled JS structure. If Claude Code changes its bundling, the regex in `diff-commands.sh` may need adjustment -- this would be evident from anomalous output (zero commands or unexpected names).
+- Aliases (e.g., `/reset` for `/clear`) are extracted automatically from `aliases:[...]` fields.
+- Commands with `isHidden` or disabled `isEnabled` are excluded.
+- Plugins (`~/.claude/plugins/`) and user-installed skills (`~/.claude/skills/`) are not built-in; they are handled by dynamic discovery at tab-completion time.

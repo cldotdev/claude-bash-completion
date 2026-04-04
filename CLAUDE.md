@@ -6,31 +6,18 @@ How to update the `builtin_commands` array when a new Claude Code version is rel
 
 ### Source of Truth
 
-- Installed Claude binary (sole source)
-- The binary is a Bun-compiled executable with embedded JS; each built-in command is defined with `type:"local"/"local-jsx"/"prompt"` fields or registered via `e3()`/`oZ7()` calls
+- [Claude Code changelog](https://raw.githubusercontent.com/anthropics/claude-code/refs/heads/main/CHANGELOG.md)
+- Baseline established at v2.1.92 by auditing the installed binary and cross-referencing with the changelog
 
-### Check Current Version
+### Update Steps
 
-```bash
-claude --version
-```
-
-Compare with the version in `claude-completion.bash` comment (line starting with `# Built-in slash commands`).
-
-### Diff
-
-```bash
-./scripts/diff-commands.sh
-```
-
-The script extracts command definitions from the installed Claude binary using structured type patterns, compares them against `builtin_commands` in `claude-completion.bash`, and prints new/removed commands. It automatically handles aliases and excludes hidden/internal commands.
-
-### Apply Changes
-
-- Add new commands to `builtin_commands` array in alphabetical order.
-- Remove commands no longer in the binary.
-- Update the version comment: count and version number.
-- Update `README.md` with the new count and version.
+1. Read the changelog for the target version.
+2. Identify slash command additions and removals (new commands, removed commands, renamed commands, new bundled skills).
+3. Update `builtin_commands` array in `claude-completion.bash`:
+   - Add new commands in alphabetical order.
+   - Remove commands no longer present.
+   - Update the version comment: count and version number.
+4. Update `README.md` with the new count and version.
 
 ### Verify
 
@@ -40,7 +27,4 @@ The script extracts command definitions from the installed Claude binary using s
 
 ### Notes
 
-- The binary extraction pattern depends on the Bun-compiled JS structure. If Claude Code changes its bundling, the regex in `diff-commands.sh` may need adjustment -- this would be evident from anomalous output (zero commands or unexpected names).
-- Aliases (e.g., `/reset` for `/clear`) are extracted automatically from `aliases:[...]` fields.
-- Commands with `isHidden` or disabled `isEnabled` are excluded.
 - Plugins (`~/.claude/plugins/`) and user-installed skills (`~/.claude/skills/`) are not built-in; they are handled by dynamic discovery at tab-completion time.

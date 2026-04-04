@@ -2,7 +2,7 @@
 
 ## Update Procedure
 
-How to update the `builtin_commands` array when a new Claude Code version is released.
+How to update the `_CLAUDE_BUILTIN_COMMANDS` array when a new Claude Code version is released.
 
 ### Source of Truth
 
@@ -13,7 +13,7 @@ How to update the `builtin_commands` array when a new Claude Code version is rel
 
 1. Read the changelog for the target version.
 2. Identify slash command additions and removals (new commands, removed commands, renamed commands, new bundled skills).
-3. Update `builtin_commands` array in `claude-completion.bash`:
+3. Update `_CLAUDE_BUILTIN_COMMANDS` array in `claude-completion.bash`:
    - Add new commands in alphabetical order.
    - Remove commands no longer present.
    - Update the version comment: count and version number.
@@ -22,7 +22,7 @@ How to update the `builtin_commands` array when a new Claude Code version is rel
 ### Verify
 
 - `shellcheck claude-completion.bash` -- no warnings.
-- Command count matches the comment: `sed -n '/builtin_commands=(/,/)/p' claude-completion.bash | grep -oP '/[a-z][-a-z]*' | wc -l`
+- Command count matches the comment: `sed -n '/_CLAUDE_BUILTIN_COMMANDS=(/,/)/p' claude-completion.bash | grep -oP '/[a-z][-a-z]*' | wc -l`
 - Source the script and confirm `complete -p claude` registers the function.
 
 ### Notes

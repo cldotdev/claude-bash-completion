@@ -97,11 +97,105 @@ _CLAUDE_BUILTIN_COMMANDS=(
 )
 readonly -a _CLAUDE_BUILTIN_COMMANDS
 
+# CLI flags (64 flags as of v2.1.92)
+_CLAUDE_FLAGS=(
+  --add-dir
+  --agent --agents
+  --allow-dangerously-skip-permissions
+  --allowedTools --allowed-tools
+  --append-system-prompt --append-system-prompt-file
+  --bare --betas --brief
+  --chrome
+  -c --continue
+  --dangerously-skip-permissions
+  -d --debug --debug-file
+  --disable-slash-commands
+  --disallowedTools --disallowed-tools
+  --effort
+  --exclude-dynamic-system-prompt-sections
+  --fallback-model --file --fork-session --from-pr
+  -h --help
+  --ide
+  --include-hook-events --include-partial-messages
+  --input-format
+  --json-schema
+  --max-budget-usd --mcp-config --mcp-debug --model
+  -n --name --no-chrome --no-session-persistence
+  --output-format
+  --permission-mode --plugin-dir
+  -p --print
+  --remote-control-session-name-prefix --replay-user-messages
+  -r --resume
+  --session-id --setting-sources --settings --strict-mcp-config
+  --system-prompt --system-prompt-file
+  --tmux --tools
+  --verbose
+  -v --version
+  -w --worktree
+)
+readonly -a _CLAUDE_FLAGS
+
+# CLI subcommands (11 subcommands as of v2.1.92)
+_CLAUDE_SUBCOMMANDS=(
+  agents auth auto-mode doctor install
+  mcp plugin plugins setup-token update upgrade
+)
+readonly -a _CLAUDE_SUBCOMMANDS
+
 _claude_bash_completion()
 {
-  local cur
+  local cur prev
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
+  prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+  # Flag value completions
+  case "$prev" in
+    --model|--fallback-model)
+      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku sonnet[1m] opus[1m] opusplan claude-opus-4-6 claude-sonnet-4-6 claude-haiku-4-5-20251001" -- "$cur")
+      return 0
+      ;;
+    --output-format)
+      mapfile -t COMPREPLY < <(compgen -W "text json stream-json" -- "$cur")
+      return 0
+      ;;
+    --input-format)
+      mapfile -t COMPREPLY < <(compgen -W "text stream-json" -- "$cur")
+      return 0
+      ;;
+    --permission-mode)
+      mapfile -t COMPREPLY < <(compgen -W "default acceptEdits auto bypassPermissions dontAsk plan" -- "$cur")
+      return 0
+      ;;
+    --effort)
+      mapfile -t COMPREPLY < <(compgen -W "low medium high max" -- "$cur")
+      return 0
+      ;;
+    --setting-sources)
+      mapfile -t COMPREPLY < <(compgen -W "user project local" -- "$cur")
+      return 0
+      ;;
+    --mcp-config|--system-prompt-file|--append-system-prompt-file|--settings|--debug-file)
+      mapfile -t COMPREPLY < <(compgen -f -- "$cur")
+      return 0
+      ;;
+    --plugin-dir|--add-dir)
+      mapfile -t COMPREPLY < <(compgen -d -- "$cur")
+      return 0
+      ;;
+  esac
+
+  # Flag completions
+  if [[ "$cur" == -* ]]; then
+    mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_FLAGS[*]}" -- "$cur")
+    return 0
+  fi
+
+  # Subcommand completions (first argument only)
+  if [[ "$COMP_CWORD" -eq 1 && "$cur" != /* && "$cur" != -* ]]; then
+    mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_SUBCOMMANDS[*]}" -- "$cur")
+    return 0
+  fi
 
   if [[ "$cur" == /* ]]; then
     local commands_dir="$HOME/.claude/commands"
@@ -133,4 +227,4 @@ _claude_bash_completion()
 
   return 0
 }
-complete -F _claude_bash_completion claude
+complete -o default -F _claude_bash_completion claude

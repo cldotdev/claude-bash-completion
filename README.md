@@ -5,8 +5,10 @@ Bash completion script for Claude Code CLI, providing tab completion for both bu
 ## Features
 
 - Auto-completion for all Claude Code built-in slash commands (99 commands as of v2.1.92)
+- Auto-completion for CLI flags and their values (64 flags as of v2.1.92)
+- Auto-completion for CLI subcommands (11 subcommands as of v2.1.92)
 - Auto-completion for custom commands and skills from personal and project directories
-- Smart detection: completions only trigger when input starts with `/`
+- Filesystem fallback when no programmatic completion matches
 
 ## Requirements
 
@@ -51,13 +53,23 @@ Then reload your shell or start a new terminal session.
 Once installed, you can use tab completion with the `claude` command:
 
 ```bash
-# Type and press Tab to see all available commands
-claude /
+# Slash commands
+claude /         # Shows all available slash commands
+claude /con      # Completes to /config, /context, /cost, etc.
 
-# Type partial command and press Tab for completion
-claude /con    # Completes to /config, /context, /cost, etc.
+# CLI flags
+claude --        # Shows all long flags
+claude --mo      # Completes to --model
 
-# Works with both built-in and custom commands
+# Flag values
+claude --model   # Shows model options: sonnet, opus, haiku, etc.
+claude --effort  # Shows effort levels: low, medium, high, max
+
+# Subcommands
+claude           # Shows subcommands: doctor, mcp, auth, etc.
+claude up        # Completes to update, upgrade
+
+# Custom commands and skills
 claude /my-custom-    # If you have custom commands in ~/.claude/commands/
 ```
 

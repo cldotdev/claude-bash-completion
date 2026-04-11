@@ -71,7 +71,7 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (99 commands as of v2.1.92)
+# Built-in slash commands (101 commands as of v2.1.101)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /agents /allowed-tools /android /app
   /batch /bashes /branch /brief /btw /buddy /bug
@@ -91,8 +91,8 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /remote-env /rename /reset /resume /review /rewind
   /sandbox /schedule /security-review /settings /simplify
   /skillify /skills /stats /status /statusline /stickers /stuck
-  /tasks /terminal-setup /theme /think-back
-  /ultrareview /update-config /upgrade /usage
+  /tasks /team-onboarding /terminal-setup /theme /think-back
+  /ultraplan /ultrareview /update-config /upgrade /usage
   /verify /voice /web-setup
 )
 readonly -a _CLAUDE_BUILTIN_COMMANDS

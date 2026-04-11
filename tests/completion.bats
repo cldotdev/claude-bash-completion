@@ -145,6 +145,25 @@ setup() {
   [[ "$joined" != *"/help"* ]]
 }
 
+@test "_CLAUDE_BUILTIN_COMMANDS array has 101 entries" {
+  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 101 ]]
+}
+
+@test "_CLAUDE_BUILTIN_COMMANDS is readonly" {
+  run bash -c 'source claude-completion.bash; _CLAUDE_BUILTIN_COMMANDS=(foo)'
+  [[ "$status" -ne 0 ]]
+}
+
+@test "/team-onboarding is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/team-onboarding"* ]]
+}
+
+@test "/ultraplan is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/ultraplan"* ]]
+}
+
 @test "_CLAUDE_FLAGS array has 64 entries" {
   [[ "${#_CLAUDE_FLAGS[@]}" -eq 64 ]]
 }

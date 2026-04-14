@@ -145,13 +145,18 @@ setup() {
   [[ "$joined" != *"/help"* ]]
 }
 
-@test "_CLAUDE_BUILTIN_COMMANDS array has 101 entries" {
-  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 101 ]]
+@test "_CLAUDE_BUILTIN_COMMANDS array has 102 entries" {
+  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 102 ]]
 }
 
 @test "_CLAUDE_BUILTIN_COMMANDS is readonly" {
   run bash -c 'source claude-completion.bash; _CLAUDE_BUILTIN_COMMANDS=(foo)'
   [[ "$status" -ne 0 ]]
+}
+
+@test "/proactive is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/proactive"* ]]
 }
 
 @test "/team-onboarding is in builtin commands" {

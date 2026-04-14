@@ -71,10 +71,10 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (101 commands as of v2.1.101)
+# Built-in slash commands (102 commands as of v2.1.105)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /agents /allowed-tools /android /app
-  /batch /bashes /branch /brief /btw /buddy /bug
+  /bashes /batch /branch /brief /btw /buddy /bug
   /checkpoint /chrome /claude-api /claude-in-chrome /clear /color
   /compact /config /context /continue /copy /cost
   /debug /desktop /diff /doctor
@@ -86,7 +86,7 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /login /logout /loop /lorem-ipsum
   /marketplace /mcp /memory /mobile /model /new
   /passes /permissions /plan /plugin /plugins /powerup
-  /pr-comments /privacy-settings /quit
+  /pr-comments /privacy-settings /proactive /quit
   /rc /release-notes /reload-plugins /remember /remote-control
   /remote-env /rename /reset /resume /review /rewind
   /sandbox /schedule /security-review /settings /simplify

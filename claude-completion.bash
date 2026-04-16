@@ -71,7 +71,7 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (102 commands as of v2.1.105)
+# Built-in slash commands (107 commands as of v2.1.111)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /agents /allowed-tools /android /app
   /bashes /batch /branch /brief /btw /buddy /bug
@@ -79,20 +79,20 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /compact /config /context /continue /copy /cost
   /debug /desktop /diff /doctor
   /effort /exit /export /extra-usage
-  /fast /feedback /fork
+  /fast /feedback /focus /fork
   /help /hooks
   /ide /init /insights /install-github-app /install-slack-app /ios
   /keybindings /keybindings-help
-  /login /logout /loop /lorem-ipsum
+  /less-permission-prompts /login /logout /loop /lorem-ipsum
   /marketplace /mcp /memory /mobile /model /new
   /passes /permissions /plan /plugin /plugins /powerup
   /pr-comments /privacy-settings /proactive /quit
-  /rc /release-notes /reload-plugins /remember /remote-control
+  /rc /recap /release-notes /reload-plugins /remember /remote-control
   /remote-env /rename /reset /resume /review /rewind
   /sandbox /schedule /security-review /settings /simplify
   /skillify /skills /stats /status /statusline /stickers /stuck
-  /tasks /team-onboarding /terminal-setup /theme /think-back
-  /ultraplan /ultrareview /update-config /upgrade /usage
+  /tasks /team-onboarding /terminal-setup /theme /think-back /tui
+  /ultraplan /ultrareview /undo /update-config /upgrade /usage
   /verify /voice /web-setup
 )
 readonly -a _CLAUDE_BUILTIN_COMMANDS
@@ -152,7 +152,7 @@ _claude_bash_completion()
   # Flag value completions
   case "$prev" in
     --model|--fallback-model)
-      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku sonnet[1m] opus[1m] opusplan claude-opus-4-6 claude-sonnet-4-6 claude-haiku-4-5-20251001" -- "$cur")
+      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku sonnet[1m] opus[1m] opusplan claude-opus-4-7 claude-opus-4-6 claude-sonnet-4-6 claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
       return 0
       ;;
     --output-format)
@@ -168,7 +168,7 @@ _claude_bash_completion()
       return 0
       ;;
     --effort)
-      mapfile -t COMPREPLY < <(compgen -W "low medium high max" -- "$cur")
+      mapfile -t COMPREPLY < <(compgen -W "low medium high xhigh max" -- "$cur")
       return 0
       ;;
     --setting-sources)

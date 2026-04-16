@@ -86,11 +86,12 @@ setup() {
 
 @test "--effort completes with effort levels" {
   _simulate_completion "claude" "--effort" "" -- 2
-  [[ "${#COMPREPLY[@]}" -eq 4 ]]
+  [[ "${#COMPREPLY[@]}" -eq 5 ]]
   local joined="${COMPREPLY[*]}"
   [[ "$joined" == *"low"* ]]
   [[ "$joined" == *"medium"* ]]
   [[ "$joined" == *"high"* ]]
+  [[ "$joined" == *"xhigh"* ]]
   [[ "$joined" == *"max"* ]]
 }
 
@@ -145,8 +146,8 @@ setup() {
   [[ "$joined" != *"/help"* ]]
 }
 
-@test "_CLAUDE_BUILTIN_COMMANDS array has 102 entries" {
-  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 102 ]]
+@test "_CLAUDE_BUILTIN_COMMANDS array has 107 entries" {
+  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 107 ]]
 }
 
 @test "_CLAUDE_BUILTIN_COMMANDS is readonly" {
@@ -167,6 +168,31 @@ setup() {
 @test "/ultraplan is in builtin commands" {
   local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
   [[ "$joined" == *"/ultraplan"* ]]
+}
+
+@test "/recap is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/recap"* ]]
+}
+
+@test "/undo is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/undo"* ]]
+}
+
+@test "/focus is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/focus"* ]]
+}
+
+@test "/tui is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/tui"* ]]
+}
+
+@test "/less-permission-prompts is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/less-permission-prompts"* ]]
 }
 
 @test "_CLAUDE_FLAGS array has 64 entries" {

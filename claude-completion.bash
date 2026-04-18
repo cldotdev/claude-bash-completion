@@ -71,7 +71,7 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (107 commands as of v2.1.111)
+# Built-in slash commands (107 commands as of v2.1.114)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /agents /allowed-tools /android /app
   /bashes /batch /branch /brief /btw /buddy /bug
@@ -152,7 +152,7 @@ _claude_bash_completion()
   # Flag value completions
   case "$prev" in
     --model|--fallback-model)
-      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku sonnet[1m] opus[1m] opusplan claude-opus-4-7 claude-opus-4-6 claude-sonnet-4-6 claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
+      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku sonnet[1m] opus[1m] opusplan claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
       return 0
       ;;
     --output-format)

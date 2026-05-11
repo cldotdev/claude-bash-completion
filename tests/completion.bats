@@ -146,8 +146,8 @@ setup() {
   [[ "$joined" != *"/help"* ]]
 }
 
-@test "_CLAUDE_BUILTIN_COMMANDS array has 107 entries" {
-  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 107 ]]
+@test "_CLAUDE_BUILTIN_COMMANDS array has 109 entries" {
+  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 109 ]]
 }
 
 @test "_CLAUDE_BUILTIN_COMMANDS is readonly" {

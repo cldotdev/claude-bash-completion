@@ -95,6 +95,37 @@ setup() {
   [[ "$joined" == *"max"* ]]
 }
 
+@test "/code-review completes with effort levels" {
+  _simulate_completion "claude" "/code-review" "" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 5 ]]
+  local joined="${COMPREPLY[*]}"
+  [[ "$joined" == *"low"* ]]
+  [[ "$joined" == *"medium"* ]]
+  [[ "$joined" == *"high"* ]]
+  [[ "$joined" == *"xhigh"* ]]
+  [[ "$joined" == *"max"* ]]
+}
+
+@test "/code-review with --c completes to --comment" {
+  _simulate_completion "claude" "/code-review" "--c" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--comment" ]]
+}
+
+@test "/code-review after effort with --c completes to --comment" {
+  _simulate_completion "claude" "/code-review" "high" "--c" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--comment" ]]
+}
+
+@test "flag completion outside /code-review does not include --comment" {
+  _simulate_completion "claude" "--c" -- 1
+  local joined="${COMPREPLY[*]}"
+  [[ "$joined" != *"--comment"* ]]
+  [[ "$joined" == *"--chrome"* ]]
+  [[ "$joined" == *"--continue"* ]]
+}
+
 @test "--setting-sources completes with source values" {
   _simulate_completion "claude" "--setting-sources" "" -- 2
   [[ "${#COMPREPLY[@]}" -eq 3 ]]

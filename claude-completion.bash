@@ -71,7 +71,7 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (109 commands as of v2.1.146)
+# Built-in slash commands (109 commands as of v2.1.147)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /agents /allowed-tools /android /app
   /bashes /batch /branch /brief /btw /buddy /bug
@@ -143,6 +143,10 @@ _CLAUDE_SUBCOMMANDS=(
 )
 readonly -a _CLAUDE_SUBCOMMANDS
 
+# Effort levels (shared by --effort flag and /code-review command)
+_CLAUDE_EFFORT_LEVELS=(low medium high xhigh max)
+readonly -a _CLAUDE_EFFORT_LEVELS
+
 _claude_bash_completion()
 {
   local cur prev
@@ -150,7 +154,7 @@ _claude_bash_completion()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-  # Flag value completions
+  # Flag and slash command argument value completions
   case "$prev" in
     --model|--fallback-model)
       mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku sonnet[1m] opus[1m] opusplan claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
@@ -169,7 +173,15 @@ _claude_bash_completion()
       return 0
       ;;
     --effort)
-      mapfile -t COMPREPLY < <(compgen -W "low medium high xhigh max" -- "$cur")
+      mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_EFFORT_LEVELS[*]}" -- "$cur")
+      return 0
+      ;;
+    /code-review)
+      if [[ "$cur" == -* ]]; then
+        mapfile -t COMPREPLY < <(compgen -W "--comment" -- "$cur")
+      else
+        mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_EFFORT_LEVELS[*]}" -- "$cur")
+      fi
       return 0
       ;;
     --setting-sources)
@@ -188,7 +200,11 @@ _claude_bash_completion()
 
   # Flag completions
   if [[ "$cur" == -* ]]; then
-    mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_FLAGS[*]}" -- "$cur")
+    if [[ " ${COMP_WORDS[*]} " == *" /code-review "* ]]; then
+      mapfile -t COMPREPLY < <(compgen -W "--comment" -- "$cur")
+    else
+      mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_FLAGS[*]}" -- "$cur")
+    fi
     return 0
   fi
 

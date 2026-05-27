@@ -118,6 +118,25 @@ setup() {
   [[ "${COMPREPLY[0]}" == "--comment" ]]
 }
 
+@test "/code-review with --f completes to --fix" {
+  _simulate_completion "claude" "/code-review" "--f" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--fix" ]]
+}
+
+@test "/code-review with -- completes both --comment and --fix" {
+  # Set arrays directly: _simulate_completion treats "--" as its own
+  # word/cword separator, so a literal "--" word cannot pass through it.
+  COMP_WORDS=(claude /code-review --)
+  COMP_CWORD=2
+  COMPREPLY=()
+  _claude_bash_completion
+  [[ "${#COMPREPLY[@]}" -eq 2 ]]
+  local joined="${COMPREPLY[*]}"
+  [[ "$joined" == *"--comment"* ]]
+  [[ "$joined" == *"--fix"* ]]
+}
+
 @test "flag completion outside /code-review does not include --comment" {
   _simulate_completion "claude" "--c" -- 1
   local joined="${COMPREPLY[*]}"
@@ -177,8 +196,8 @@ setup() {
   [[ "$joined" != *"/help"* ]]
 }
 
-@test "_CLAUDE_BUILTIN_COMMANDS array has 109 entries" {
-  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 109 ]]
+@test "_CLAUDE_BUILTIN_COMMANDS array has 111 entries" {
+  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 111 ]]
 }
 
 @test "_CLAUDE_BUILTIN_COMMANDS is readonly" {
@@ -224,6 +243,16 @@ setup() {
 @test "/less-permission-prompts is in builtin commands" {
   local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
   [[ "$joined" == *"/less-permission-prompts"* ]]
+}
+
+@test "/reload-skills is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/reload-skills"* ]]
+}
+
+@test "/simplify is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/simplify"* ]]
 }
 
 @test "_CLAUDE_FLAGS array has 64 entries" {

@@ -71,7 +71,7 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (109 commands as of v2.1.147)
+# Built-in slash commands (111 commands as of v2.1.152)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /agents /allowed-tools /android /app
   /bashes /batch /branch /brief /btw /buddy /bug
@@ -88,10 +88,10 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /marketplace /mcp /memory /mobile /model /new
   /passes /permissions /plan /plugin /plugins /powerup
   /pr-comments /privacy-settings /proactive /quit
-  /rc /recap /release-notes /reload-plugins /remember /remote-control
+  /rc /recap /release-notes /reload-plugins /reload-skills /remember /remote-control
   /remote-env /rename /reset /resume /review /rewind
   /sandbox /schedule /scroll-speed /security-review /settings
-  /skillify /skills /stats /status /statusline /stickers /stuck
+  /simplify /skillify /skills /stats /status /statusline /stickers /stuck
   /tasks /team-onboarding /terminal-setup /theme /think-back /tui
   /ultraplan /ultrareview /undo /update-config /upgrade /usage
   /verify /voice /web-setup
@@ -147,6 +147,10 @@ readonly -a _CLAUDE_SUBCOMMANDS
 _CLAUDE_EFFORT_LEVELS=(low medium high xhigh max)
 readonly -a _CLAUDE_EFFORT_LEVELS
 
+# Flags accepted by the /code-review command (shared by both flag paths)
+_CLAUDE_CODE_REVIEW_FLAGS=(--comment --fix)
+readonly -a _CLAUDE_CODE_REVIEW_FLAGS
+
 _claude_bash_completion()
 {
   local cur prev
@@ -178,7 +182,7 @@ _claude_bash_completion()
       ;;
     /code-review)
       if [[ "$cur" == -* ]]; then
-        mapfile -t COMPREPLY < <(compgen -W "--comment" -- "$cur")
+        mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_CODE_REVIEW_FLAGS[*]}" -- "$cur")
       else
         mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_EFFORT_LEVELS[*]}" -- "$cur")
       fi
@@ -201,7 +205,7 @@ _claude_bash_completion()
   # Flag completions
   if [[ "$cur" == -* ]]; then
     if [[ " ${COMP_WORDS[*]} " == *" /code-review "* ]]; then
-      mapfile -t COMPREPLY < <(compgen -W "--comment" -- "$cur")
+      mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_CODE_REVIEW_FLAGS[*]}" -- "$cur")
     else
       mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_FLAGS[*]}" -- "$cur")
     fi

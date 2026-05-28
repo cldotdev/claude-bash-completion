@@ -196,8 +196,8 @@ setup() {
   [[ "$joined" != *"/help"* ]]
 }
 
-@test "_CLAUDE_BUILTIN_COMMANDS array has 111 entries" {
-  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 111 ]]
+@test "_CLAUDE_BUILTIN_COMMANDS array has 107 entries" {
+  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 107 ]]
 }
 
 @test "_CLAUDE_BUILTIN_COMMANDS is readonly" {
@@ -240,9 +240,9 @@ setup() {
   [[ "$joined" == *"/tui"* ]]
 }
 
-@test "/less-permission-prompts is in builtin commands" {
+@test "/fewer-permission-prompts is in builtin commands" {
   local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
-  [[ "$joined" == *"/less-permission-prompts"* ]]
+  [[ "$joined" == *"/fewer-permission-prompts"* ]]
 }
 
 @test "/reload-skills is in builtin commands" {

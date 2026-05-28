@@ -58,6 +58,16 @@ setup() {
   [[ "$joined" == *"sonnet"* ]]
 }
 
+@test "/model completes with model values" {
+  _simulate_completion "claude" "/model" "" -- 2
+  [[ "${#COMPREPLY[@]}" -gt 0 ]]
+  local joined="${COMPREPLY[*]}"
+  [[ "$joined" == *"sonnet"* ]]
+  [[ "$joined" == *"opus"* ]]
+  [[ "$joined" == *"haiku"* ]]
+  [[ "$joined" == *"default"* ]]
+}
+
 @test "--output-format completes with format values" {
   _simulate_completion "claude" "--output-format" "" -- 2
   [[ "${#COMPREPLY[@]}" -eq 3 ]]

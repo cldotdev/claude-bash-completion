@@ -147,6 +147,47 @@ setup() {
   [[ "$joined" == *"--fix"* ]]
 }
 
+@test "/plugin completes with subcommands" {
+  _simulate_completion "claude" "/plugin" "" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 6 ]]
+  local joined="${COMPREPLY[*]}"
+  [[ "$joined" == *"install"* ]]
+  [[ "$joined" == *"uninstall"* ]]
+  [[ "$joined" == *"enable"* ]]
+  [[ "$joined" == *"disable"* ]]
+  [[ "$joined" == *"list"* ]]
+  [[ "$joined" == *"marketplace"* ]]
+}
+
+@test "/plugin with inst completes to install only" {
+  _simulate_completion "claude" "/plugin" "inst" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "install" ]]
+}
+
+@test "/plugin marketplace completes with sub-subcommands" {
+  _simulate_completion "claude" "/plugin" "marketplace" "" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 4 ]]
+  local joined="${COMPREPLY[*]}"
+  [[ "$joined" == *"add"* ]]
+  [[ "$joined" == *"remove"* ]]
+  [[ "$joined" == *"list"* ]]
+  [[ "$joined" == *"update"* ]]
+}
+
+@test "/plugin subcommand completion does not include slash commands" {
+  _simulate_completion "claude" "/plugin" "" -- 2
+  local joined="${COMPREPLY[*]}"
+  [[ "$joined" != *"/help"* ]]
+}
+
+@test "marketplace sub-subcommands only complete within /plugin context" {
+  _simulate_completion "claude" "/code-review" "marketplace" "" -- 3
+  local joined="${COMPREPLY[*]}"
+  [[ "$joined" != *"add"* ]]
+  [[ "$joined" != *"update"* ]]
+}
+
 @test "flag completion outside /code-review does not include --comment" {
   _simulate_completion "claude" "--c" -- 1
   local joined="${COMPREPLY[*]}"

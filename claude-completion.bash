@@ -71,7 +71,7 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (107 commands as of v2.1.156)
+# Built-in slash commands (107 commands as of v2.1.163)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /agents /allowed-tools /android /app
   /bashes /batch /branch /brief /btw /bug
@@ -151,6 +151,14 @@ readonly -a _CLAUDE_EFFORT_LEVELS
 _CLAUDE_CODE_REVIEW_FLAGS=(--comment --fix)
 readonly -a _CLAUDE_CODE_REVIEW_FLAGS
 
+# Subcommands accepted by the /plugin command
+_CLAUDE_PLUGIN_SUBCOMMANDS=(install uninstall enable disable list marketplace)
+readonly -a _CLAUDE_PLUGIN_SUBCOMMANDS
+
+# Sub-subcommands accepted by /plugin marketplace
+_CLAUDE_PLUGIN_MARKETPLACE_SUBCOMMANDS=(add remove list update)
+readonly -a _CLAUDE_PLUGIN_MARKETPLACE_SUBCOMMANDS
+
 _claude_bash_completion()
 {
   local cur prev
@@ -187,6 +195,18 @@ _claude_bash_completion()
         mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_EFFORT_LEVELS[*]}" -- "$cur")
       fi
       return 0
+      ;;
+    /plugin)
+      mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_PLUGIN_SUBCOMMANDS[*]}" -- "$cur")
+      return 0
+      ;;
+    marketplace)
+      # Only the marketplace sub-subcommand of /plugin; guard against the
+      # standalone /marketplace builtin and unrelated contexts.
+      if [[ " ${COMP_WORDS[*]} " == *" /plugin "* ]]; then
+        mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_PLUGIN_MARKETPLACE_SUBCOMMANDS[*]}" -- "$cur")
+        return 0
+      fi
       ;;
     --setting-sources)
       mapfile -t COMPREPLY < <(compgen -W "user project local" -- "$cur")

@@ -51,6 +51,12 @@ setup() {
   [[ "$joined" == *"default"* ]]
 }
 
+@test "--model completes with claude-fable-5" {
+  _simulate_completion "claude" "--model" "" -- 2
+  local joined="${COMPREPLY[*]}"
+  [[ "$joined" == *"claude-fable-5"* ]]
+}
+
 @test "--fallback-model completes with model values" {
   _simulate_completion "claude" "--fallback-model" "" -- 2
   [[ "${#COMPREPLY[@]}" -gt 0 ]]
@@ -247,8 +253,8 @@ setup() {
   [[ "$joined" != *"/help"* ]]
 }
 
-@test "_CLAUDE_BUILTIN_COMMANDS array has 107 entries" {
-  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 107 ]]
+@test "_CLAUDE_BUILTIN_COMMANDS array has 108 entries" {
+  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 108 ]]
 }
 
 @test "_CLAUDE_BUILTIN_COMMANDS is readonly" {
@@ -306,8 +312,18 @@ setup() {
   [[ "$joined" == *"/simplify"* ]]
 }
 
-@test "_CLAUDE_FLAGS array has 64 entries" {
-  [[ "${#_CLAUDE_FLAGS[@]}" -eq 64 ]]
+@test "/cd is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/cd"* ]]
+}
+
+@test "--safe-mode is in flags" {
+  local joined="${_CLAUDE_FLAGS[*]}"
+  [[ "$joined" == *"--safe-mode"* ]]
+}
+
+@test "_CLAUDE_FLAGS array has 65 entries" {
+  [[ "${#_CLAUDE_FLAGS[@]}" -eq 65 ]]
 }
 
 @test "_CLAUDE_FLAGS is readonly" {

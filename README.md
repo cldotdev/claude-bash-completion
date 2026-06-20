@@ -4,9 +4,9 @@ Bash completion script for Claude Code CLI, providing tab completion for both bu
 
 ## Features
 
-- Auto-completion for all Claude Code built-in slash commands (108 commands as of v2.1.170)
-- Auto-completion for CLI flags and their values (65 flags as of v2.1.170)
-- Auto-completion for CLI subcommands (11 subcommands as of v2.1.105)
+- Auto-completion for all Claude Code built-in slash commands (110 commands as of v2.1.183)
+- Auto-completion for CLI flags and their values (65 flags as of v2.1.183)
+- Auto-completion for CLI subcommands (11 subcommands as of v2.1.183)
 - Auto-completion for custom commands and skills from personal and project directories
 - Filesystem fallback when no programmatic completion matches
 

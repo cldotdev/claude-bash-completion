@@ -71,10 +71,10 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (108 commands as of v2.1.170)
+# Built-in slash commands (110 commands as of v2.1.183)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /agents /allowed-tools /android /app
-  /bashes /batch /branch /brief /btw /bug
+  /background /bashes /batch /bg /branch /brief /btw /bug
   /cd /checkpoint /chrome /claude-api /claude-in-chrome /clear /code-review /color
   /compact /config /context /continue /copy /cost
   /debug /desktop /diff /doctor
@@ -98,7 +98,7 @@ _CLAUDE_BUILTIN_COMMANDS=(
 )
 readonly -a _CLAUDE_BUILTIN_COMMANDS
 
-# CLI flags (65 flags as of v2.1.170)
+# CLI flags (65 flags as of v2.1.183)
 _CLAUDE_FLAGS=(
   --add-dir
   --agent --agents
@@ -137,7 +137,7 @@ _CLAUDE_FLAGS=(
 )
 readonly -a _CLAUDE_FLAGS
 
-# CLI subcommands (11 subcommands as of v2.1.92)
+# CLI subcommands (11 subcommands as of v2.1.183)
 _CLAUDE_SUBCOMMANDS=(
   agents auth auto-mode doctor install
   mcp plugin plugins setup-token update upgrade
@@ -170,7 +170,7 @@ _claude_bash_completion()
   # Flag and slash command argument value completions
   case "$prev" in
     --model|--fallback-model|/model)
-      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku sonnet[1m] opus[1m] opusplan claude-fable-5 claude-fable-5[1m] claude-opus-4-8 claude-opus-4-8[1m] claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
+      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku sonnet[1m] opus[1m] opusplan claude-fable-5 claude-opus-4-8 claude-opus-4-8[1m] claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
       return 0
       ;;
     --output-format)

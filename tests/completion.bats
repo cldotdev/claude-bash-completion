@@ -253,8 +253,8 @@ setup() {
   [[ "$joined" != *"/help"* ]]
 }
 
-@test "_CLAUDE_BUILTIN_COMMANDS array has 108 entries" {
-  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 108 ]]
+@test "_CLAUDE_BUILTIN_COMMANDS array has 110 entries" {
+  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 110 ]]
 }
 
 @test "_CLAUDE_BUILTIN_COMMANDS is readonly" {
@@ -315,6 +315,16 @@ setup() {
 @test "/cd is in builtin commands" {
   local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
   [[ "$joined" == *"/cd"* ]]
+}
+
+@test "/background is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/background"* ]]
+}
+
+@test "/bg is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/bg"* ]]
 }
 
 @test "--safe-mode is in flags" {

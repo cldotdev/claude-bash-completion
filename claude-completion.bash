@@ -71,7 +71,7 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (110 commands as of v2.1.183)
+# Built-in slash commands (110 commands as of v2.1.197)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /agents /allowed-tools /android /app
   /background /bashes /batch /bg /branch /brief /btw /bug
@@ -98,14 +98,15 @@ _CLAUDE_BUILTIN_COMMANDS=(
 )
 readonly -a _CLAUDE_BUILTIN_COMMANDS
 
-# CLI flags (65 flags as of v2.1.183)
+# CLI flags (70 flags as of v2.1.197)
 _CLAUDE_FLAGS=(
   --add-dir
   --agent --agents
   --allow-dangerously-skip-permissions
   --allowedTools --allowed-tools
   --append-system-prompt --append-system-prompt-file
-  --bare --betas --brief
+  --ax-screen-reader
+  --background --bare --betas --bg --brief
   --chrome
   -c --continue
   --dangerously-skip-permissions
@@ -120,12 +121,12 @@ _CLAUDE_FLAGS=(
   --include-hook-events --include-partial-messages
   --input-format
   --json-schema
-  --max-budget-usd --mcp-config --mcp-debug --model
+  --max-budget-usd --mcp-config --model
   -n --name --no-chrome --no-session-persistence
   --output-format
-  --permission-mode --plugin-dir
-  -p --print
-  --remote-control-session-name-prefix --replay-user-messages
+  --permission-mode --plugin-dir --plugin-url
+  -p --print --prompt-suggestions
+  --remote-control --remote-control-session-name-prefix --replay-user-messages
   -r --resume
   --safe-mode
   --session-id --setting-sources --settings --strict-mcp-config
@@ -137,10 +138,10 @@ _CLAUDE_FLAGS=(
 )
 readonly -a _CLAUDE_FLAGS
 
-# CLI subcommands (11 subcommands as of v2.1.183)
+# CLI subcommands (14 subcommands as of v2.1.197)
 _CLAUDE_SUBCOMMANDS=(
-  agents auth auto-mode doctor install
-  mcp plugin plugins setup-token update upgrade
+  agents auth auto-mode doctor gateway install
+  mcp plugin plugins project setup-token ultrareview update upgrade
 )
 readonly -a _CLAUDE_SUBCOMMANDS
 
@@ -170,7 +171,7 @@ _claude_bash_completion()
   # Flag and slash command argument value completions
   case "$prev" in
     --model|--fallback-model|/model)
-      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku sonnet[1m] opus[1m] opusplan claude-fable-5 claude-opus-4-8 claude-opus-4-8[1m] claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
+      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku sonnet[1m] opus[1m] opusplan claude-fable-5 claude-sonnet-5 claude-opus-4-8 claude-opus-4-8[1m] claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
       return 0
       ;;
     --output-format)
@@ -183,6 +184,10 @@ _claude_bash_completion()
       ;;
     --permission-mode)
       mapfile -t COMPREPLY < <(compgen -W "default acceptEdits auto bypassPermissions dontAsk plan" -- "$cur")
+      return 0
+      ;;
+    --prompt-suggestions)
+      mapfile -t COMPREPLY < <(compgen -W "true false yes no on off 1 0" -- "$cur")
       return 0
       ;;
     --effort)

@@ -57,6 +57,12 @@ setup() {
   [[ "$joined" == *"claude-fable-5"* ]]
 }
 
+@test "--model completes with claude-sonnet-5" {
+  _simulate_completion "claude" "--model" "" -- 2
+  local joined="${COMPREPLY[*]}"
+  [[ "$joined" == *"claude-sonnet-5"* ]]
+}
+
 @test "--fallback-model completes with model values" {
   _simulate_completion "claude" "--fallback-model" "" -- 2
   [[ "${#COMPREPLY[@]}" -gt 0 ]]
@@ -332,8 +338,42 @@ setup() {
   [[ "$joined" == *"--safe-mode"* ]]
 }
 
-@test "_CLAUDE_FLAGS array has 65 entries" {
-  [[ "${#_CLAUDE_FLAGS[@]}" -eq 65 ]]
+@test "--bg and --background are in flags" {
+  local joined="${_CLAUDE_FLAGS[*]}"
+  [[ "$joined" == *"--bg"* ]]
+  [[ "$joined" == *"--background"* ]]
+}
+
+@test "--ax-screen-reader is in flags" {
+  local joined="${_CLAUDE_FLAGS[*]}"
+  [[ "$joined" == *"--ax-screen-reader"* ]]
+}
+
+@test "--plugin-url is in flags" {
+  local joined="${_CLAUDE_FLAGS[*]}"
+  [[ "$joined" == *"--plugin-url"* ]]
+}
+
+@test "--remote-control is in flags" {
+  local joined=" ${_CLAUDE_FLAGS[*]} "
+  [[ "$joined" == *" --remote-control "* ]]
+}
+
+@test "--mcp-debug is no longer in flags" {
+  local joined=" ${_CLAUDE_FLAGS[*]} "
+  [[ "$joined" != *" --mcp-debug "* ]]
+}
+
+@test "--prompt-suggestions completes with choice values" {
+  _simulate_completion "claude" "--prompt-suggestions" "" -- 2
+  [[ "${#COMPREPLY[@]}" -gt 0 ]]
+  local joined="${COMPREPLY[*]}"
+  [[ "$joined" == *"true"* ]]
+  [[ "$joined" == *"false"* ]]
+}
+
+@test "_CLAUDE_FLAGS array has 70 entries" {
+  [[ "${#_CLAUDE_FLAGS[@]}" -eq 70 ]]
 }
 
 @test "_CLAUDE_FLAGS is readonly" {
@@ -367,8 +407,15 @@ setup() {
   [[ "$joined" != *"doctor"* ]]
 }
 
-@test "_CLAUDE_SUBCOMMANDS array has 11 entries" {
-  [[ "${#_CLAUDE_SUBCOMMANDS[@]}" -eq 11 ]]
+@test "gateway, project, and ultrareview are in subcommands" {
+  local joined="${_CLAUDE_SUBCOMMANDS[*]}"
+  [[ "$joined" == *"gateway"* ]]
+  [[ "$joined" == *"project"* ]]
+  [[ "$joined" == *"ultrareview"* ]]
+}
+
+@test "_CLAUDE_SUBCOMMANDS array has 14 entries" {
+  [[ "${#_CLAUDE_SUBCOMMANDS[@]}" -eq 14 ]]
 }
 
 @test "_CLAUDE_SUBCOMMANDS is readonly" {

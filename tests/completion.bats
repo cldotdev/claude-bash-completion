@@ -333,6 +333,16 @@ setup() {
   [[ "$joined" == *"/bg"* ]]
 }
 
+@test "/dataviz is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/dataviz"* ]]
+}
+
+@test "/agents is no longer in builtin commands" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" != *" /agents "* ]]
+}
+
 @test "--safe-mode is in flags" {
   local joined="${_CLAUDE_FLAGS[*]}"
   [[ "$joined" == *"--safe-mode"* ]]

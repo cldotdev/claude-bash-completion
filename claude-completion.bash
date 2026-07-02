@@ -39,7 +39,9 @@ _claude_frontmatter_name() {
   local file="$1"
   [[ -f "$file" ]] || return 0
   sed -n '
-    1{/^---$/!q}
+    1{
+      /^---$/!q
+    }
     2,/^---$/{
       /^name: */{
         s/^name: *//

@@ -73,11 +73,11 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (110 commands as of v2.1.198)
+# Built-in slash commands (111 commands as of v2.1.206)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /allowed-tools /android /app
   /background /bashes /batch /bg /branch /brief /btw /bug
-  /cd /checkpoint /chrome /claude-api /claude-in-chrome /clear /code-review /color
+  /cd /checkpoint /checkup /chrome /claude-api /claude-in-chrome /clear /code-review /color
   /compact /config /context /continue /copy /cost
   /dataviz /debug /desktop /diff /doctor
   /effort /exit /export
@@ -100,7 +100,7 @@ _CLAUDE_BUILTIN_COMMANDS=(
 )
 readonly -a _CLAUDE_BUILTIN_COMMANDS
 
-# CLI flags (70 flags as of v2.1.198)
+# CLI flags (70 flags as of v2.1.206)
 _CLAUDE_FLAGS=(
   --add-dir
   --agent --agents
@@ -140,7 +140,7 @@ _CLAUDE_FLAGS=(
 )
 readonly -a _CLAUDE_FLAGS
 
-# CLI subcommands (14 subcommands as of v2.1.198)
+# CLI subcommands (14 subcommands as of v2.1.206)
 _CLAUDE_SUBCOMMANDS=(
   agents auth auto-mode doctor gateway install
   mcp plugin plugins project setup-token ultrareview update upgrade

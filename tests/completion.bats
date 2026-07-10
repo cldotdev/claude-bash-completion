@@ -259,8 +259,8 @@ setup() {
   [[ "$joined" != *"/help"* ]]
 }
 
-@test "_CLAUDE_BUILTIN_COMMANDS array has 110 entries" {
-  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 110 ]]
+@test "_CLAUDE_BUILTIN_COMMANDS array has 111 entries" {
+  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 111 ]]
 }
 
 @test "_CLAUDE_BUILTIN_COMMANDS is readonly" {
@@ -336,6 +336,11 @@ setup() {
 @test "/dataviz is in builtin commands" {
   local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
   [[ "$joined" == *"/dataviz"* ]]
+}
+
+@test "/checkup is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/checkup"* ]]
 }
 
 @test "/agents is no longer in builtin commands" {

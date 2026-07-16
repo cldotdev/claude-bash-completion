@@ -1,14 +1,16 @@
 # Claude Bash Completion
 
-Bash completion script for Claude Code CLI, providing tab completion for both built-in slash commands and custom commands.
+Bash completion script for the Claude Code CLI, providing tab completion for built-in slash commands, CLI flags and subcommands, and custom commands and skills.
 
 ## Features
 
-- Auto-completion for all Claude Code built-in slash commands (123 commands as of v2.1.211)
-- Auto-completion for CLI flags and their values (71 flags as of v2.1.211)
-- Auto-completion for CLI subcommands (14 subcommands as of v2.1.211)
+- Auto-completion for all Claude Code built-in slash commands (123 commands)
+- Auto-completion for CLI flags and their values (71 flags)
+- Auto-completion for CLI subcommands (14 subcommands)
 - Auto-completion for custom commands and skills from personal and project directories
 - Filesystem fallback when no programmatic completion matches
+
+> Command, flag, and subcommand counts reflect Claude Code v2.1.211.
 
 ## Requirements
 
@@ -63,7 +65,7 @@ claude --mo      # Completes to --model
 
 # Flag values
 claude --model   # Shows model options: sonnet, opus, haiku, etc.
-claude --effort  # Shows effort levels: low, medium, high, max
+claude --effort  # Shows effort levels: low, medium, high, xhigh, max
 
 # Subcommands
 claude           # Shows subcommands: doctor, mcp, auth, etc.
@@ -72,6 +74,20 @@ claude up        # Completes to update, upgrade
 # Custom commands and skills
 claude /my-custom-    # If you have custom commands in ~/.claude/commands/
 ```
+
+## How It Works
+
+Sourcing the script does two things:
+
+1. **Registers the completion function** via `complete -o default -F _claude_bash_completion claude`, so pressing Tab after `claude` runs the completion logic. The `-o default` option falls back to filesystem completion when no programmatic match applies.
+2. **Defines a `claude()` shell wrapper** that shadows the `claude` binary. When the command line contains a slash command, the wrapper merges the slash command and everything after it into a single argument before delegating to the real binary via `command claude`. This lets multi-word arguments reach the CLI intact:
+
+   ```bash
+   claude --model haiku /format 'some text'
+   # runs: command claude --model haiku "/format some text"
+   ```
+
+Completions are drawn from static built-in lists (commands, flags, subcommands, and known flag values), dynamically discovered custom commands and skills (see [Custom Commands and Skills](#custom-commands-and-skills)), and a filesystem fallback when nothing else matches.
 
 ## Custom Commands and Skills
 
@@ -85,6 +101,17 @@ The script automatically discovers custom slash commands and skills from these l
 Subdirectory structures are converted to colon-separated names (e.g., `commands/dev/rails.md` or `skills/dev/rails/SKILL.md` becomes `/dev:rails`).
 
 Project root is detected via `git rev-parse --show-toplevel`. Project-level discovery is skipped when not inside a git repository.
+
+## Development
+
+Run the test suite with [bats](https://github.com/bats-core/bats-core), and lint the script with [shellcheck](https://www.shellcheck.net/):
+
+```bash
+bats tests/
+shellcheck claude-completion.bash
+```
+
+The built-in command, flag, and subcommand lists are aligned with each Claude Code release. See [CLAUDE.md](CLAUDE.md) for the alignment procedure.
 
 ## License
 

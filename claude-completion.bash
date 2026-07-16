@@ -73,13 +73,14 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (111 commands as of v2.1.206)
+# Built-in slash commands (123 commands as of v2.1.211)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /allowed-tools /android /app
+  /artifact-capabilities /artifact-design /artifacts /autocompact /autofix-pr
   /background /bashes /batch /bg /branch /brief /btw /bug
   /cd /checkpoint /checkup /chrome /claude-api /claude-in-chrome /clear /code-review /color
   /compact /config /context /continue /copy /cost
-  /dataviz /debug /desktop /diff /doctor
+  /dataviz /debug /design /design-login /design-sync /desktop /diff /doctor
   /effort /exit /export
   /fast /feedback /fewer-permission-prompts /focus /fork
   /goal
@@ -90,17 +91,17 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /marketplace /mcp /memory /mobile /model /new
   /passes /permissions /plan /plugin /plugins /powerup
   /privacy-settings /proactive /quit
-  /rc /recap /release-notes /reload-plugins /reload-skills /remember /remote-control
-  /remote-env /rename /reset /resume /review /rewind
+  /radio /rc /recap /release-notes /reload-plugins /reload-skills /remember /remote-control
+  /remote-env /rename /reset /resume /review /rewind /run /run-skill-generator
   /sandbox /schedule /scroll-speed /security-review /settings
   /simplify /skills /stats /status /statusline /stickers /stuck
-  /tasks /team-onboarding /terminal-setup /theme /tui
+  /tasks /team-onboarding /teleport /terminal-setup /theme /tui
   /ultraplan /ultrareview /undo /update-config /upgrade /usage /usage-credits
   /verify /voice /web-setup /workflows
 )
 readonly -a _CLAUDE_BUILTIN_COMMANDS
 
-# CLI flags (70 flags as of v2.1.206)
+# CLI flags (71 flags as of v2.1.211)
 _CLAUDE_FLAGS=(
   --add-dir
   --agent --agents
@@ -117,7 +118,7 @@ _CLAUDE_FLAGS=(
   --disallowedTools --disallowed-tools
   --effort
   --exclude-dynamic-system-prompt-sections
-  --fallback-model --file --fork-session --from-pr
+  --fallback-model --file --fork-session --forward-subagent-text --from-pr
   -h --help
   --ide
   --include-hook-events --include-partial-messages
@@ -140,7 +141,7 @@ _CLAUDE_FLAGS=(
 )
 readonly -a _CLAUDE_FLAGS
 
-# CLI subcommands (14 subcommands as of v2.1.206)
+# CLI subcommands (14 subcommands as of v2.1.211)
 _CLAUDE_SUBCOMMANDS=(
   agents auth auto-mode doctor gateway install
   mcp plugin plugins project setup-token ultrareview update upgrade
@@ -173,7 +174,7 @@ _claude_bash_completion()
   # Flag and slash command argument value completions
   case "$prev" in
     --model|--fallback-model|/model)
-      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku sonnet[1m] opus[1m] opusplan claude-fable-5 claude-sonnet-5 claude-opus-4-8 claude-opus-4-8[1m] claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
+      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku fable sonnet[1m] opus[1m] fable[1m] opusplan claude-fable-5 claude-fable-5[1m] claude-sonnet-5 claude-sonnet-5[1m] claude-opus-4-8 claude-opus-4-8[1m] claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
       return 0
       ;;
     --output-format)
@@ -185,7 +186,7 @@ _claude_bash_completion()
       return 0
       ;;
     --permission-mode)
-      mapfile -t COMPREPLY < <(compgen -W "default acceptEdits auto bypassPermissions dontAsk plan" -- "$cur")
+      mapfile -t COMPREPLY < <(compgen -W "default acceptEdits auto bypassPermissions manual dontAsk plan" -- "$cur")
       return 0
       ;;
     --prompt-suggestions)

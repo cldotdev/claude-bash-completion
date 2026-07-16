@@ -63,6 +63,14 @@ setup() {
   [[ "$joined" == *"claude-sonnet-5"* ]]
 }
 
+@test "--model completes with fable aliases" {
+  _simulate_completion "claude" "--model" "" -- 2
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" fable "* ]]
+  [[ "$joined" == *" fable[1m] "* ]]
+  [[ "$joined" == *" claude-fable-5[1m] "* ]]
+}
+
 @test "--fallback-model completes with model values" {
   _simulate_completion "claude" "--fallback-model" "" -- 2
   [[ "${#COMPREPLY[@]}" -gt 0 ]]
@@ -99,10 +107,11 @@ setup() {
 
 @test "--permission-mode completes with mode values" {
   _simulate_completion "claude" "--permission-mode" "" -- 2
-  [[ "${#COMPREPLY[@]}" -eq 6 ]]
+  [[ "${#COMPREPLY[@]}" -eq 7 ]]
   local joined="${COMPREPLY[*]}"
   [[ "$joined" == *"default"* ]]
   [[ "$joined" == *"auto"* ]]
+  [[ "$joined" == *"manual"* ]]
   [[ "$joined" == *"plan"* ]]
 }
 
@@ -259,8 +268,8 @@ setup() {
   [[ "$joined" != *"/help"* ]]
 }
 
-@test "_CLAUDE_BUILTIN_COMMANDS array has 111 entries" {
-  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 111 ]]
+@test "_CLAUDE_BUILTIN_COMMANDS array has 123 entries" {
+  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 123 ]]
 }
 
 @test "_CLAUDE_BUILTIN_COMMANDS is readonly" {
@@ -343,6 +352,41 @@ setup() {
   [[ "$joined" == *"/checkup"* ]]
 }
 
+@test "/run is in builtin commands" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" == *" /run "* ]]
+}
+
+@test "/run-skill-generator is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/run-skill-generator"* ]]
+}
+
+@test "/artifacts is in builtin commands" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" == *" /artifacts "* ]]
+}
+
+@test "/autocompact is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/autocompact"* ]]
+}
+
+@test "/design-sync is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/design-sync"* ]]
+}
+
+@test "/radio is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/radio"* ]]
+}
+
+@test "/teleport is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/teleport"* ]]
+}
+
 @test "/agents is no longer in builtin commands" {
   local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
   [[ "$joined" != *" /agents "* ]]
@@ -369,6 +413,11 @@ setup() {
   [[ "$joined" == *"--plugin-url"* ]]
 }
 
+@test "--forward-subagent-text is in flags" {
+  local joined="${_CLAUDE_FLAGS[*]}"
+  [[ "$joined" == *"--forward-subagent-text"* ]]
+}
+
 @test "--remote-control is in flags" {
   local joined=" ${_CLAUDE_FLAGS[*]} "
   [[ "$joined" == *" --remote-control "* ]]
@@ -387,8 +436,8 @@ setup() {
   [[ "$joined" == *"false"* ]]
 }
 
-@test "_CLAUDE_FLAGS array has 70 entries" {
-  [[ "${#_CLAUDE_FLAGS[@]}" -eq 70 ]]
+@test "_CLAUDE_FLAGS array has 71 entries" {
+  [[ "${#_CLAUDE_FLAGS[@]}" -eq 71 ]]
 }
 
 @test "_CLAUDE_FLAGS is readonly" {

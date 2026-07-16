@@ -45,7 +45,7 @@ How to update the `--model` and `--fallback-model` value completions when Anthro
    - Newly deprecated models with a retirement date within the next 6 months (drop them).
    - Aliases added or removed for existing snapshot IDs.
 3. Update the `compgen -W` list for `--model` and `--fallback-model` in `claude-completion.bash`. Keep:
-   - Claude Code aliases: `default`, `best`, `sonnet`, `opus`, `haiku`, `sonnet[1m]`, `opus[1m]`, `opusplan`.
+   - Claude Code aliases: `default`, `best`, `sonnet`, `opus`, `haiku`, `fable`, `sonnet[1m]`, `opus[1m]`, `fable[1m]`, `opusplan`.
    - All current model API IDs and their aliases.
    - Legacy models still actively used by Claude Code (e.g., `claude-opus-4-6` for `/fast` mode).
 4. Skip deprecated models that will be retired within 6 months to avoid steering users to expiring IDs.

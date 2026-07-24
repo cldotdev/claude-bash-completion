@@ -1,3 +1,5 @@
+# Project Instructions
+
 ## Completion Alignment Procedure
 
 How to update the `_CLAUDE_BUILTIN_COMMANDS`, `_CLAUDE_FLAGS`, and `_CLAUDE_SUBCOMMANDS` arrays and the flag value completions when a new Claude Code version is released.
@@ -28,6 +30,7 @@ How to update the `_CLAUDE_BUILTIN_COMMANDS`, `_CLAUDE_FLAGS`, and `_CLAUDE_SUBC
 
 ### Notes
 
+- The lists cover everything the CLI accepts, not just what `claude --help` prints. Include command aliases (`/tp` for `/teleport`, `rc` for `remote-control`) and hidden entries the product still documents in its own usage text (`--teleport`, `claude attach|logs|stop|rm|respawn|daemon`). Leave out undocumented internal aliases (`claude kill`, `claude sync`) and flags that only exist for subprocess plumbing (`--bg-pty-host`, `--preload`).
 - Plugins (`~/.claude/plugins/`) and user-installed skills (`~/.claude/skills/`) are not built-in; they are handled by dynamic discovery at tab-completion time.
 - `/agents` is intentionally excluded: its interactive wizard was removed in favor of `.claude/agents/` in v2.1.198, and its TUI menu entry is a tombstone marked "(removed)".
 

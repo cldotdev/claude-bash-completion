@@ -4,13 +4,13 @@ Bash completion script for the Claude Code CLI, providing tab completion for bui
 
 ## Features
 
-- Auto-completion for all Claude Code built-in slash commands (123 commands)
-- Auto-completion for CLI flags and their values (71 flags)
-- Auto-completion for CLI subcommands (14 subcommands)
+- Auto-completion for all Claude Code built-in slash commands (127 commands)
+- Auto-completion for CLI flags and their values (72 flags)
+- Auto-completion for CLI subcommands (22 subcommands)
 - Auto-completion for custom commands and skills from personal and project directories
 - Filesystem fallback when no programmatic completion matches
 
-> Command, flag, and subcommand counts reflect Claude Code v2.1.211.
+> Command, flag, and subcommand counts reflect Claude Code v2.1.219. The lists cover everything the CLI accepts, including command aliases and entries that `claude --help` hides, such as `--teleport` and `claude attach`.
 
 ## Requirements
 

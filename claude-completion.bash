@@ -73,14 +73,14 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (123 commands as of v2.1.211)
+# Built-in slash commands (127 commands as of v2.1.219)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /allowed-tools /android /app
   /artifact-capabilities /artifact-design /artifacts /autocompact /autofix-pr
   /background /bashes /batch /bg /branch /brief /btw /bug
   /cd /checkpoint /checkup /chrome /claude-api /claude-in-chrome /clear /code-review /color
   /compact /config /context /continue /copy /cost
-  /dataviz /debug /design /design-login /design-sync /desktop /diff /doctor
+  /dataviz /debug /deep-research /design /design-login /design-sync /desktop /diff /doctor
   /effort /exit /export
   /fast /feedback /fewer-permission-prompts /focus /fork
   /goal
@@ -88,20 +88,20 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /ide /init /insights /install-github-app /install-slack-app /ios
   /keybindings /keybindings-help
   /login /logout /loop
-  /marketplace /mcp /memory /mobile /model /new
+  /marketplace /mcp /memory /mobile /model /name /new
   /passes /permissions /plan /plugin /plugins /powerup
   /privacy-settings /proactive /quit
-  /radio /rc /recap /release-notes /reload-plugins /reload-skills /remember /remote-control
-  /remote-env /rename /reset /resume /review /rewind /run /run-skill-generator
-  /sandbox /schedule /scroll-speed /security-review /settings
-  /simplify /skills /stats /status /statusline /stickers /stuck
-  /tasks /team-onboarding /teleport /terminal-setup /theme /tui
+  /radio /rc /recap /release-notes /reload-plugins /reload-skills /remote-control
+  /remote-env /rename /reset /resume /review /rewind /routines /run /run-skill-generator
+  /sandbox /schedule /scroll-speed /security-review /settings /share
+  /simplify /skills /stats /status /statusline /stickers /subtask
+  /tasks /team-onboarding /teleport /terminal-setup /theme /tp /tui
   /ultraplan /ultrareview /undo /update-config /upgrade /usage /usage-credits
   /verify /voice /web-setup /workflows
 )
 readonly -a _CLAUDE_BUILTIN_COMMANDS
 
-# CLI flags (71 flags as of v2.1.211)
+# CLI flags (72 flags as of v2.1.219)
 _CLAUDE_FLAGS=(
   --add-dir
   --agent --agents
@@ -134,17 +134,18 @@ _CLAUDE_FLAGS=(
   --safe-mode
   --session-id --setting-sources --settings --strict-mcp-config
   --system-prompt --system-prompt-file
-  --tmux --tools
+  --teleport --tmux --tools
   --verbose
   -v --version
   -w --worktree
 )
 readonly -a _CLAUDE_FLAGS
 
-# CLI subcommands (14 subcommands as of v2.1.211)
+# CLI subcommands (22 subcommands as of v2.1.219)
 _CLAUDE_SUBCOMMANDS=(
-  agents auth auto-mode doctor gateway install
-  mcp plugin plugins project setup-token ultrareview update upgrade
+  agents attach auth auto-mode daemon doctor gateway install logs
+  mcp plugin plugins project rc remote-control respawn rm setup-token
+  stop ultrareview update upgrade
 )
 readonly -a _CLAUDE_SUBCOMMANDS
 
@@ -155,6 +156,11 @@ readonly -a _CLAUDE_EFFORT_LEVELS
 # Flags accepted by the /code-review command (shared by both flag paths)
 _CLAUDE_CODE_REVIEW_FLAGS=(--comment --fix)
 readonly -a _CLAUDE_CODE_REVIEW_FLAGS
+
+# Positional values accepted by the /code-review command: the effort levels
+# plus "ultra", which escalates the review to the cloud-hosted /ultrareview
+_CLAUDE_CODE_REVIEW_ARGS=("${_CLAUDE_EFFORT_LEVELS[@]}" ultra)
+readonly -a _CLAUDE_CODE_REVIEW_ARGS
 
 # Subcommands accepted by the /plugin command
 _CLAUDE_PLUGIN_SUBCOMMANDS=(install uninstall enable disable list marketplace)
@@ -174,7 +180,7 @@ _claude_bash_completion()
   # Flag and slash command argument value completions
   case "$prev" in
     --model|--fallback-model|/model)
-      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku fable sonnet[1m] opus[1m] fable[1m] opusplan claude-fable-5 claude-fable-5[1m] claude-sonnet-5 claude-sonnet-5[1m] claude-opus-4-8 claude-opus-4-8[1m] claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
+      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku fable sonnet[1m] opus[1m] fable[1m] opusplan claude-fable-5 claude-fable-5[1m] claude-opus-5 claude-opus-5[1m] claude-sonnet-5 claude-sonnet-5[1m] claude-opus-4-8 claude-opus-4-8[1m] claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
       return 0
       ;;
     --output-format)
@@ -201,7 +207,7 @@ _claude_bash_completion()
       if [[ "$cur" == -* ]]; then
         mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_CODE_REVIEW_FLAGS[*]}" -- "$cur")
       else
-        mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_EFFORT_LEVELS[*]}" -- "$cur")
+        mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_CODE_REVIEW_ARGS[*]}" -- "$cur")
       fi
       return 0
       ;;

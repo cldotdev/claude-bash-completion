@@ -63,6 +63,13 @@ setup() {
   [[ "$joined" == *"claude-sonnet-5"* ]]
 }
 
+@test "--model completes with claude-opus-5 and its 1M variant" {
+  _simulate_completion "claude" "--model" "" -- 2
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" claude-opus-5 "* ]]
+  [[ "$joined" == *" claude-opus-5[1m] "* ]]
+}
+
 @test "--model completes with fable aliases" {
   _simulate_completion "claude" "--model" "" -- 2
   local joined=" ${COMPREPLY[*]} "
@@ -126,15 +133,16 @@ setup() {
   [[ "$joined" == *"max"* ]]
 }
 
-@test "/code-review completes with effort levels" {
+@test "/code-review completes with effort levels and ultra" {
   _simulate_completion "claude" "/code-review" "" -- 2
-  [[ "${#COMPREPLY[@]}" -eq 5 ]]
+  [[ "${#COMPREPLY[@]}" -eq 6 ]]
   local joined="${COMPREPLY[*]}"
   [[ "$joined" == *"low"* ]]
   [[ "$joined" == *"medium"* ]]
   [[ "$joined" == *"high"* ]]
   [[ "$joined" == *"xhigh"* ]]
   [[ "$joined" == *"max"* ]]
+  [[ "$joined" == *"ultra"* ]]
 }
 
 @test "/code-review with --c completes to --comment" {
@@ -268,8 +276,8 @@ setup() {
   [[ "$joined" != *"/help"* ]]
 }
 
-@test "_CLAUDE_BUILTIN_COMMANDS array has 123 entries" {
-  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 123 ]]
+@test "_CLAUDE_BUILTIN_COMMANDS array has 127 entries" {
+  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 127 ]]
 }
 
 @test "_CLAUDE_BUILTIN_COMMANDS is readonly" {
@@ -387,9 +395,37 @@ setup() {
   [[ "$joined" == *"/teleport"* ]]
 }
 
+@test "/deep-research is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/deep-research"* ]]
+}
+
+@test "/subtask is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/subtask"* ]]
+}
+
+@test "hidden slash command aliases are in builtin commands" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" == *" /name "* ]]
+  [[ "$joined" == *" /routines "* ]]
+  [[ "$joined" == *" /share "* ]]
+  [[ "$joined" == *" /tp "* ]]
+}
+
 @test "/agents is no longer in builtin commands" {
   local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
   [[ "$joined" != *" /agents "* ]]
+}
+
+@test "/remember is no longer in builtin commands" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" != *" /remember "* ]]
+}
+
+@test "/stuck is no longer in builtin commands" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" != *" /stuck "* ]]
 }
 
 @test "--safe-mode is in flags" {
@@ -436,8 +472,13 @@ setup() {
   [[ "$joined" == *"false"* ]]
 }
 
-@test "_CLAUDE_FLAGS array has 71 entries" {
-  [[ "${#_CLAUDE_FLAGS[@]}" -eq 71 ]]
+@test "--teleport is in flags" {
+  local joined=" ${_CLAUDE_FLAGS[*]} "
+  [[ "$joined" == *" --teleport "* ]]
+}
+
+@test "_CLAUDE_FLAGS array has 72 entries" {
+  [[ "${#_CLAUDE_FLAGS[@]}" -eq 72 ]]
 }
 
 @test "_CLAUDE_FLAGS is readonly" {
@@ -478,8 +519,24 @@ setup() {
   [[ "$joined" == *"ultrareview"* ]]
 }
 
-@test "_CLAUDE_SUBCOMMANDS array has 14 entries" {
-  [[ "${#_CLAUDE_SUBCOMMANDS[@]}" -eq 14 ]]
+@test "background session subcommands are in subcommands" {
+  local joined=" ${_CLAUDE_SUBCOMMANDS[*]} "
+  [[ "$joined" == *" attach "* ]]
+  [[ "$joined" == *" logs "* ]]
+  [[ "$joined" == *" respawn "* ]]
+  [[ "$joined" == *" rm "* ]]
+  [[ "$joined" == *" stop "* ]]
+}
+
+@test "daemon and remote control subcommands are in subcommands" {
+  local joined=" ${_CLAUDE_SUBCOMMANDS[*]} "
+  [[ "$joined" == *" daemon "* ]]
+  [[ "$joined" == *" rc "* ]]
+  [[ "$joined" == *" remote-control "* ]]
+}
+
+@test "_CLAUDE_SUBCOMMANDS array has 22 entries" {
+  [[ "${#_CLAUDE_SUBCOMMANDS[@]}" -eq 22 ]]
 }
 
 @test "_CLAUDE_SUBCOMMANDS is readonly" {

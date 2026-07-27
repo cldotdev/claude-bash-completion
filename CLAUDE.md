@@ -40,20 +40,24 @@ How to update the `--model` and `--fallback-model` value completions when Anthro
 
 ### Source of Truth
 
-- [Claude API models overview](https://platform.claude.com/docs/en/about-claude/models/overview)
+- [Claude API models overview](https://platform.claude.com/docs/en/about-claude/models/overview) -- current models, API IDs, and aliases
+- [Model status table](https://platform.claude.com/docs/en/about-claude/model-deprecations#model-status) -- lifecycle state (Active, Legacy, Deprecated, Retired), deprecation dates, and retirement dates
 
 ### Update Steps
 
-1. Fetch the Claude API models overview page.
+1. Fetch both pages above.
 2. Identify model changes:
    - New current-generation models (add API ID and alias).
-   - Newly deprecated models with a retirement date within the next 6 months (drop them).
+   - Models whose status moved off Active in the model status table (drop them per step 4).
    - Aliases added or removed for existing snapshot IDs.
 3. Update the `compgen -W` list for `--model` and `--fallback-model` in `claude-completion.bash`. Keep:
    - Claude Code aliases: `default`, `best`, `sonnet`, `opus`, `haiku`, `fable`, `sonnet[1m]`, `opus[1m]`, `fable[1m]`, `opusplan`.
    - All current model API IDs and their aliases.
-   - Legacy models still actively used by Claude Code (e.g., `claude-opus-4-7` for `/fast` mode).
-4. Skip deprecated models that will be retired within 6 months to avoid steering users to expiring IDs.
+   - Older models still actively used by Claude Code (e.g., `claude-opus-4-7` for `/fast` mode).
+4. Drop entries by lifecycle state, checking every model ID already in the list, not just the ones the release touched:
+   - Retired: remove immediately, because requests to these models fail.
+   - Deprecated: remove once the retirement date falls within 6 months, to avoid steering users to expiring IDs.
+   - Legacy: keep while Claude Code still accepts the model, and re-check on the next update.
 
 ### Verify
 

@@ -276,8 +276,8 @@ setup() {
   [[ "$joined" != *"/help"* ]]
 }
 
-@test "_CLAUDE_BUILTIN_COMMANDS array has 127 entries" {
-  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 127 ]]
+@test "_CLAUDE_BUILTIN_COMMANDS array has 124 entries" {
+  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 124 ]]
 }
 
 @test "_CLAUDE_BUILTIN_COMMANDS is readonly" {
@@ -295,9 +295,9 @@ setup() {
   [[ "$joined" == *"/team-onboarding"* ]]
 }
 
-@test "/ultraplan is in builtin commands" {
-  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
-  [[ "$joined" == *"/ultraplan"* ]]
+@test "/ultraplan is no longer in builtin commands" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" != *" /ultraplan "* ]]
 }
 
 @test "/recap is in builtin commands" {
@@ -385,9 +385,10 @@ setup() {
   [[ "$joined" == *"/design-sync"* ]]
 }
 
-@test "/radio is in builtin commands" {
-  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
-  [[ "$joined" == *"/radio"* ]]
+@test "commands behind a disabled feature flag are not in builtin commands" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" != *" /radio "* ]]
+  [[ "$joined" != *" /web-setup "* ]]
 }
 
 @test "/teleport is in builtin commands" {
@@ -477,8 +478,24 @@ setup() {
   [[ "$joined" == *" --teleport "* ]]
 }
 
-@test "_CLAUDE_FLAGS array has 72 entries" {
-  [[ "${#_CLAUDE_FLAGS[@]}" -eq 72 ]]
+@test "cloud session and context flags are in flags" {
+  local joined=" ${_CLAUDE_FLAGS[*]} "
+  [[ "$joined" == *" --autocompact "* ]]
+  [[ "$joined" == *" --cloud "* ]]
+  [[ "$joined" == *" --environment "* ]]
+}
+
+@test "--autocompact completes with window size values" {
+  _simulate_completion "claude" "--autocompact" "" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 5 ]]
+  local joined="${COMPREPLY[*]}"
+  [[ "$joined" == *"auto"* ]]
+  [[ "$joined" == *"100k"* ]]
+  [[ "$joined" == *"1m"* ]]
+}
+
+@test "_CLAUDE_FLAGS array has 75 entries" {
+  [[ "${#_CLAUDE_FLAGS[@]}" -eq 75 ]]
 }
 
 @test "_CLAUDE_FLAGS is readonly" {
@@ -535,8 +552,14 @@ setup() {
   [[ "$joined" == *" remote-control "* ]]
 }
 
-@test "_CLAUDE_SUBCOMMANDS array has 22 entries" {
-  [[ "${#_CLAUDE_SUBCOMMANDS[@]}" -eq 22 ]]
+@test "import and self-hosted-runner are in subcommands" {
+  local joined=" ${_CLAUDE_SUBCOMMANDS[*]} "
+  [[ "$joined" == *" import "* ]]
+  [[ "$joined" == *" self-hosted-runner "* ]]
+}
+
+@test "_CLAUDE_SUBCOMMANDS array has 24 entries" {
+  [[ "${#_CLAUDE_SUBCOMMANDS[@]}" -eq 24 ]]
 }
 
 @test "_CLAUDE_SUBCOMMANDS is readonly" {

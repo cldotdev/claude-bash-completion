@@ -4,13 +4,13 @@ Bash completion script for the Claude Code CLI, providing tab completion for bui
 
 ## Features
 
-- Auto-completion for all Claude Code built-in slash commands (127 commands)
-- Auto-completion for CLI flags and their values (72 flags)
-- Auto-completion for CLI subcommands (22 subcommands)
+- Auto-completion for all Claude Code built-in slash commands (124 commands)
+- Auto-completion for CLI flags and their values (75 flags)
+- Auto-completion for CLI subcommands (24 subcommands)
 - Auto-completion for custom commands and skills from personal and project directories
 - Filesystem fallback when no programmatic completion matches
 
-> Command, flag, and subcommand counts reflect Claude Code v2.1.219. The lists cover everything the CLI accepts, including command aliases and entries that `claude --help` hides, such as `--teleport` and `claude attach`.
+> Command, flag, and subcommand counts reflect Claude Code v2.1.229. The lists cover what a default account can actually run, including command aliases and entries that `claude --help` hides, such as `claude attach`. Commands that a feature flag leaves switched off are excluded, so completion never offers anything the CLI will refuse.
 
 ## Requirements
 
@@ -64,8 +64,9 @@ claude --        # Shows all long flags
 claude --mo      # Completes to --model
 
 # Flag values
-claude --model   # Shows model options: sonnet, opus, haiku, etc.
-claude --effort  # Shows effort levels: low, medium, high, xhigh, max
+claude --model        # Shows model options: sonnet, opus, haiku, etc.
+claude --effort       # Shows effort levels: low, medium, high, xhigh, max
+claude --autocompact  # Shows window sizes: auto, 100k, 200k, 500k, 1m
 
 # Subcommands
 claude           # Shows subcommands: doctor, mcp, auth, etc.

@@ -73,7 +73,7 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (127 commands as of v2.1.219)
+# Built-in slash commands (124 commands as of v2.1.229)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /allowed-tools /android /app
   /artifact-capabilities /artifact-design /artifacts /autocompact /autofix-pr
@@ -91,32 +91,32 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /marketplace /mcp /memory /mobile /model /name /new
   /passes /permissions /plan /plugin /plugins /powerup
   /privacy-settings /proactive /quit
-  /radio /rc /recap /release-notes /reload-plugins /reload-skills /remote-control
+  /rc /recap /release-notes /reload-plugins /reload-skills /remote-control
   /remote-env /rename /reset /resume /review /rewind /routines /run /run-skill-generator
   /sandbox /schedule /scroll-speed /security-review /settings /share
   /simplify /skills /stats /status /statusline /stickers /subtask
   /tasks /team-onboarding /teleport /terminal-setup /theme /tp /tui
-  /ultraplan /ultrareview /undo /update-config /upgrade /usage /usage-credits
-  /verify /voice /web-setup /workflows
+  /ultrareview /undo /update-config /upgrade /usage /usage-credits
+  /verify /voice /workflows
 )
 readonly -a _CLAUDE_BUILTIN_COMMANDS
 
-# CLI flags (72 flags as of v2.1.219)
+# CLI flags (75 flags as of v2.1.229)
 _CLAUDE_FLAGS=(
   --add-dir
   --agent --agents
   --allow-dangerously-skip-permissions
   --allowedTools --allowed-tools
   --append-system-prompt --append-system-prompt-file
-  --ax-screen-reader
+  --autocompact --ax-screen-reader
   --background --bare --betas --bg --brief
-  --chrome
+  --chrome --cloud
   -c --continue
   --dangerously-skip-permissions
   -d --debug --debug-file
   --disable-slash-commands
   --disallowedTools --disallowed-tools
-  --effort
+  --effort --environment
   --exclude-dynamic-system-prompt-sections
   --fallback-model --file --fork-session --forward-subagent-text --from-pr
   -h --help
@@ -141,11 +141,11 @@ _CLAUDE_FLAGS=(
 )
 readonly -a _CLAUDE_FLAGS
 
-# CLI subcommands (22 subcommands as of v2.1.219)
+# CLI subcommands (24 subcommands as of v2.1.229)
 _CLAUDE_SUBCOMMANDS=(
-  agents attach auth auto-mode daemon doctor gateway install logs
-  mcp plugin plugins project rc remote-control respawn rm setup-token
-  stop ultrareview update upgrade
+  agents attach auth auto-mode daemon doctor gateway import install
+  logs mcp plugin plugins project rc remote-control respawn rm
+  self-hosted-runner setup-token stop ultrareview update upgrade
 )
 readonly -a _CLAUDE_SUBCOMMANDS
 
@@ -201,6 +201,12 @@ _claude_bash_completion()
       ;;
     --effort)
       mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_EFFORT_LEVELS[*]}" -- "$cur")
+      return 0
+      ;;
+    --autocompact)
+      # Any token count from 100k to 1M is accepted, so these are round-number
+      # hints next to the `auto` keyword rather than an exhaustive value list.
+      mapfile -t COMPREPLY < <(compgen -W "auto 100k 200k 500k 1m" -- "$cur")
       return 0
       ;;
     /code-review)

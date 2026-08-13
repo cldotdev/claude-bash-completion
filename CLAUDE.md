@@ -30,7 +30,9 @@ How to update the `_CLAUDE_BUILTIN_COMMANDS`, `_CLAUDE_FLAGS`, and `_CLAUDE_SUBC
 
 ### Notes
 
-- The lists cover everything the CLI accepts, not just what `claude --help` prints. Include command aliases (`/tp` for `/teleport`, `rc` for `remote-control`) and hidden entries the product still documents in its own usage text (`--teleport`, `claude attach|logs|stop|rm|respawn|daemon`). Leave out undocumented internal aliases (`claude kill`, `claude sync`) and flags that only exist for subprocess plumbing (`--bg-pty-host`, `--preload`).
+- The lists cover what a default account can actually run, not just what `claude --help` prints. Include command aliases (`/tp` for `/teleport`, `rc` for `remote-control`) and hidden entries the product still documents in its own usage text (`claude attach|logs|stop|rm|respawn|daemon`, `claude self-hosted-runner`). Leave out undocumented internal aliases (`claude kill`, `claude sync`) and flags that only exist for subprocess plumbing (`--bg-pty-host`, `--preload`).
+- Leave out commands a default account cannot invoke, and check this in the binary rather than assuming it: `strings` the installed build, find the command's object literal, and read its `isEnabled`. A statsig lookup that defaults off (`rt("tengu_velvet_static", !1)` for `/radio`) or a hardcoded `return !1` (`/daemon`) disqualifies the command. Gating on login state, org policy, platform, or terminal capability does not, because commands gated that way still run for some users.
+- Some commands are gated outside their own object by the `open()` predicate of the runtime gate map that `getRuntimeGatedBuiltinCommands` builds; `/skill-doctor` is gated there rather than in its own definition.
 - Plugins (`~/.claude/plugins/`) and user-installed skills (`~/.claude/skills/`) are not built-in; they are handled by dynamic discovery at tab-completion time.
 - `/agents` is intentionally excluded: its interactive wizard was removed in favor of `.claude/agents/` in v2.1.198, and its TUI menu entry is a tombstone marked "(removed)".
 

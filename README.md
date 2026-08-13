@@ -6,7 +6,8 @@ Bash completion script for the Claude Code CLI, providing tab completion for bui
 
 - Auto-completion for all Claude Code built-in slash commands (124 commands)
 - Auto-completion for CLI flags and their values (75 flags)
-- Auto-completion for CLI subcommands (24 subcommands)
+- Auto-completion for CLI subcommands (24 subcommands), each with its own sub-subcommands, flags, and values, down to `claude plugin marketplace add --scope`
+- Auto-completion for built-in tool names on `--tools`, `--allowedTools`, and `--disallowedTools`
 - Auto-completion for custom commands and skills from personal and project directories
 - Filesystem fallback when no programmatic completion matches
 
@@ -68,9 +69,19 @@ claude --model        # Shows model options: sonnet, opus, haiku, etc.
 claude --effort       # Shows effort levels: low, medium, high, xhigh, max
 claude --autocompact  # Shows window sizes: auto, 100k, 200k, 500k, 1m
 
+# Tool names
+claude --tools   # Shows Bash, Read, Edit, Skill, Workflow, etc. plus default
+
 # Subcommands
-claude           # Shows subcommands: doctor, mcp, auth, etc.
-claude up        # Completes to update, upgrade
+claude                # Shows subcommands: doctor, mcp, auth, etc.
+claude up             # Completes to update, upgrade
+claude --verbose mc   # Still completes to mcp, past the leading flags
+
+# Subcommand trees
+claude mcp                       # Shows add, add-json, get, list, serve, etc.
+claude mcp add --transport       # Shows stdio, sse, http
+claude plugin marketplace        # Shows add, list, remove, rm, update
+claude auth login --             # Shows --claudeai, --console, --email, --sso
 
 # Custom commands and skills
 claude /my-custom-    # If you have custom commands in ~/.claude/commands/
@@ -89,6 +100,8 @@ Sourcing the script does two things:
    ```
 
 Completions are drawn from static built-in lists (commands, flags, subcommands, and known flag values), dynamically discovered custom commands and skills (see [Custom Commands and Skills](#custom-commands-and-skills)), and a filesystem fallback when nothing else matches.
+
+To decide which of those applies, the script first scans the line for the subcommand, skipping the value of any flag that takes one, so `claude --model opus mcp` still resolves to `mcp`. Once a subcommand is found, its own lists take over from the global ones. Where the `bash-completion` package is installed, the script hands word splitting to `_init_completion` and path completion to `_filedir`, so quoted paths and paths containing spaces are handled correctly; without the package it falls back to reading `COMP_WORDS` and `compgen` directly.
 
 ## Custom Commands and Skills
 

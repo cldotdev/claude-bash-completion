@@ -581,6 +581,180 @@ setup() {
   [[ "$joined" == *"--model"* ]]
 }
 
+# --- CLI subcommand trees ---
+
+@test "claude mcp completes with its sub-subcommands" {
+  _simulate_completion "claude" "mcp" "" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 10 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" add "* ]]
+  [[ "$joined" == *" add-from-claude-desktop "* ]]
+  [[ "$joined" == *" reset-project-choices "* ]]
+}
+
+@test "claude mcp add completes with its own flags" {
+  _simulate_completion "claude" "mcp" "add" "--tr" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--transport" ]]
+}
+
+@test "claude mcp add --transport completes with transport values" {
+  _simulate_completion "claude" "mcp" "add" "--transport" "" -- 4
+  [[ "${#COMPREPLY[@]}" -eq 3 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" stdio "* ]]
+  [[ "$joined" == *" sse "* ]]
+  [[ "$joined" == *" http "* ]]
+}
+
+@test "claude mcp add --scope completes with scope values" {
+  _simulate_completion "claude" "mcp" "add" "--scope" "" -- 4
+  [[ "${#COMPREPLY[@]}" -eq 3 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" local "* ]]
+  [[ "$joined" == *" user "* ]]
+  [[ "$joined" == *" project "* ]]
+}
+
+@test "claude plugin completes with the CLI sub-subcommands, not the slash ones" {
+  _simulate_completion "claude" "plugin" "" -- 2
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" validate "* ]]
+  [[ "$joined" == *" tag "* ]]
+  [[ "$joined" == *" autoremove "* ]]
+}
+
+@test "claude plugin marketplace completes with its sub-subcommands" {
+  _simulate_completion "claude" "plugin" "marketplace" "" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 5 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" add "* ]]
+  [[ "$joined" == *" rm "* ]]
+}
+
+@test "claude plugin eval init completes with its own flags" {
+  _simulate_completion "claude" "plugin" "eval" "init" "--ba" -- 4
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--bare" ]]
+}
+
+@test "claude auth completes with its sub-subcommands" {
+  _simulate_completion "claude" "auth" "" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 3 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" login "* ]]
+  [[ "$joined" == *" status "* ]]
+}
+
+@test "claude auth login completes with its own flags" {
+  _simulate_completion "claude" "auth" "login" "--c" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 2 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" --claudeai "* ]]
+  [[ "$joined" == *" --console "* ]]
+}
+
+@test "claude auto-mode completes with its sub-subcommands" {
+  _simulate_completion "claude" "auto-mode" "" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 4 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" critique "* ]]
+  [[ "$joined" == *" defaults "* ]]
+}
+
+@test "claude daemon completes with its sub-subcommands" {
+  _simulate_completion "claude" "daemon" "" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 5 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" uninstall "* ]]
+}
+
+@test "claude project purge completes with its own flags" {
+  _simulate_completion "claude" "project" "purge" "--d" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--dry-run" ]]
+}
+
+@test "claude import completes with agent sources" {
+  _simulate_completion "claude" "import" "" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 2 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" codex "* ]]
+  [[ "$joined" == *" gemini "* ]]
+}
+
+@test "claude install completes with version targets" {
+  _simulate_completion "claude" "install" "" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 2 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" stable "* ]]
+  [[ "$joined" == *" latest "* ]]
+}
+
+@test "subcommand flags replace the global flag list" {
+  _simulate_completion "claude" "ultrareview" "--t" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--timeout" ]]
+}
+
+@test "subcommands still complete after a global flag and its value" {
+  _simulate_completion "claude" "--model" "opus" "mc" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "mcp" ]]
+}
+
+@test "subcommands still complete after a valueless global flag" {
+  _simulate_completion "claude" "--verbose" "doc" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "doctor" ]]
+}
+
+@test "a slash command suppresses subcommand completion" {
+  _simulate_completion "claude" "/help" "" -- 2
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" != *" doctor "* ]]
+  [[ "$joined" != *" mcp "* ]]
+}
+
+# --- tool name values ---
+
+@test "--tools completes with built-in tool names" {
+  _simulate_completion "claude" "--tools" "" -- 2
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" Bash "* ]]
+  [[ "$joined" == *" Read "* ]]
+  [[ "$joined" == *" Skill "* ]]
+  [[ "$joined" == *" default "* ]]
+}
+
+@test "--allowedTools and --disallowed-tools complete with tool names" {
+  _simulate_completion "claude" "--allowedTools" "Web" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 3 ]]
+  _simulate_completion "claude" "--disallowed-tools" "Web" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 3 ]]
+}
+
+@test "variadic flags keep completing past their first value" {
+  _simulate_completion "claude" "--tools" "Bash" "Rea" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 3 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" Read "* ]]
+  [[ "$joined" == *" ReadMcpResourceTool "* ]]
+}
+
+@test "an optional-value flag followed by a dash completes flags" {
+  _simulate_completion "claude" "--resume" "--mod" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--model" ]]
+}
+
+@test "_CLAUDE_TOOL_NAMES and _CLAUDE_VALUE_FLAGS are readonly" {
+  run bash -c 'source claude-completion.bash; _CLAUDE_TOOL_NAMES=(foo)'
+  [[ "$status" -ne 0 ]]
+  run bash -c 'source claude-completion.bash; _CLAUDE_VALUE_FLAGS=(foo)'
+  [[ "$status" -ne 0 ]]
+}
+
 # --- complete registration ---
 
 @test "complete registration includes -o default" {

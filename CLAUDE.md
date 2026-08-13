@@ -2,19 +2,20 @@
 
 ## Completion Alignment Procedure
 
-How to update the `_CLAUDE_BUILTIN_COMMANDS`, `_CLAUDE_FLAGS`, and `_CLAUDE_SUBCOMMANDS` arrays and the flag value completions when a new Claude Code version is released.
+How to update the `_CLAUDE_BUILTIN_COMMANDS`, `_CLAUDE_FLAGS`, and `_CLAUDE_SUBCOMMANDS` arrays, the per-subcommand trees, and the flag value completions when a new Claude Code version is released.
 
 ### Source of Truth
 
 - [Claude Code changelog](https://raw.githubusercontent.com/anthropics/claude-code/refs/heads/main/CHANGELOG.md)
 - TUI slash menu audit of the installed binary as a supplement; the changelog does not announce every command (the 12 commands added in the v2.1.211 alignment were found this way)
+- `claude <subcommand> --help` for the per-subcommand trees and their flags, which the changelog rarely mentions; walk every subcommand that has sub-subcommands (`auth`, `auto-mode`, `daemon`, `mcp`, `plugin`, `plugin marketplace`, `plugin eval`, `project`)
 - Baseline established at v2.1.92 by auditing the installed binary and cross-referencing with the changelog
 
 ### Update Steps
 
 1. Read the changelog for the target version.
-2. Identify additions and removals across slash commands (new, removed, and renamed commands; new bundled skills), CLI flags, CLI subcommands, and flag values (e.g., new `--permission-mode` values).
-3. Update the affected lists in `claude-completion.bash` (`_CLAUDE_BUILTIN_COMMANDS`, `_CLAUDE_FLAGS`, `_CLAUDE_SUBCOMMANDS`, and the `compgen -W` value lists):
+2. Identify additions and removals across slash commands (new, removed, and renamed commands; new bundled skills), CLI flags, CLI subcommands, sub-subcommands and their flags, and flag values (e.g., new `--permission-mode` values).
+3. Update the affected lists in `claude-completion.bash` (`_CLAUDE_BUILTIN_COMMANDS`, `_CLAUDE_FLAGS`, `_CLAUDE_SUBCOMMANDS`, the per-subcommand arrays and the flag lists inside the `case "$cmd"` dispatch, and the `compgen -W` value lists):
    - Add new entries in alphabetical order.
    - Remove entries no longer present.
    - Update the version comments: count and version number.

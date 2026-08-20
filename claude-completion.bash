@@ -73,10 +73,11 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (124 commands as of v2.1.229)
+# Built-in slash commands (125 commands as of v2.1.238)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /allowed-tools /android /app
-  /artifact-capabilities /artifact-design /artifacts /autocompact /autofix-pr
+  /artifact-capabilities /artifact-design /artifact-diagramming /artifacts
+  /autocompact /autofix-pr
   /background /bashes /batch /bg /branch /brief /btw /bug
   /cd /checkpoint /checkup /chrome /claude-api /claude-in-chrome /clear /code-review /color
   /compact /config /context /continue /copy /cost
@@ -101,7 +102,7 @@ _CLAUDE_BUILTIN_COMMANDS=(
 )
 readonly -a _CLAUDE_BUILTIN_COMMANDS
 
-# CLI flags (75 flags as of v2.1.229)
+# CLI flags (75 flags as of v2.1.238)
 _CLAUDE_FLAGS=(
   --add-dir
   --agent --agents
@@ -141,7 +142,7 @@ _CLAUDE_FLAGS=(
 )
 readonly -a _CLAUDE_FLAGS
 
-# CLI subcommands (24 subcommands as of v2.1.229)
+# CLI subcommands (24 subcommands as of v2.1.238)
 _CLAUDE_SUBCOMMANDS=(
   agents attach auth auto-mode daemon doctor gateway import install
   logs mcp plugin plugins project rc remote-control respawn rm
@@ -199,7 +200,7 @@ readonly -a _CLAUDE_VARIADIC_FLAGS
 # Built-in tool names accepted by --tools, --allowedTools, and --disallowedTools.
 # `claude --help` carries no listing and the CLI accepts unknown names without
 # complaint, so this mirrors the built-in section of the tool ordering table in
-# the v2.1.229 binary. MCP and self-hosted-runner tools are left out: those
+# the v2.1.238 binary. MCP and self-hosted-runner tools are left out: those
 # names come from a connected server, not from the build. "default" comes from
 # the --tools help text.
 _CLAUDE_TOOL_NAMES=(
@@ -545,9 +546,9 @@ _claude_bash_completion()
             ;;
           eval)
             if [[ "$nested" == "init" ]]; then
-              _claude_reply_subcommand "$cur" "--bare -i --interactive -h --help"
+              _claude_reply_subcommand "$cur" "--bare --eval-dir -i --interactive -h --help"
             else
-              _claude_reply_subcommand "$cur" "--ablation --allow-tools --case --json --judge-model --keep-temp --max-cost-usd --model --no-publish --no-scaffold --output-dir --publish-report --report --runs --scaffold --tag --threshold --verbose -h --help" "init"
+              _claude_reply_subcommand "$cur" "--ablation --allow-tools --case --eval-dir --json --judge-model --keep-temp --max-cost-usd --model --no-publish --no-scaffold --output-dir --publish-report --report --runs --scaffold --tag --threshold --verbose -h --help" "init"
             fi
             ;;
           init|new) _claude_reply_subcommand "$cur" "--author --author-email --description -f --force --with -h --help" "" ;;
@@ -572,7 +573,13 @@ _claude_bash_completion()
         return 0
         ;;
       rc|remote-control)
-        _claude_reply_subcommand "$cur" "--continue -h --help"
+        case "$prev" in
+          --spawn)
+            mapfile -t COMPREPLY < <(compgen -W "same-dir worktree session" -- "$cur")
+            return 0
+            ;;
+        esac
+        _claude_reply_subcommand "$cur" "--capacity -c --continue --create-session-in-dir --debug-file --name --no-create-session-in-dir --permission-mode --remote-control-session-name-prefix --session-id --spawn -v --verbose -h --help"
         return 0
         ;;
       respawn)
@@ -580,7 +587,7 @@ _claude_bash_completion()
         return 0
         ;;
       self-hosted-runner)
-        _claude_reply_subcommand "$cur" "--api-url --base-dir --capacity --configure-git --confine-repo-settings --debug-token-dir --drain-grace-sec --drain-wait-sec --environment-secret-file --exec-path --exit-if-unused-min --git-host-rewrite --git-ssh-rewrite --health-port --hooks-dir --kill-session-after-min --lock-to-account --log-file --log-level --post-session-hook-timeout-sec --push-outcome-on-release --release-idle-session-min --retire-at --session-stop-grace-sec --startup-timeout-min --trust-workspace --use-anthropic-git-proxy -h --help"
+        _claude_reply_subcommand "$cur" "--api-url --base-dir --capacity --configure-git --confine-repo-settings --debug-token-dir --defer-shutdown-max-min --drain-grace-sec --drain-wait-sec --environment-secret-file --exec-path --exit-if-unused-min --git-host-rewrite --git-ssh-rewrite --health-port --hooks-dir --kill-session-after-min --lock-to-account --log-file --log-level --post-session-hook-timeout-sec --proxy-authorization-command --proxy-authorization-file --push-outcome-on-release --release-idle-session-min --retire-at --session-stop-grace-sec --startup-timeout-min --trust-workspace --use-anthropic-git-proxy -h --help"
         return 0
         ;;
       ultrareview)

@@ -276,13 +276,18 @@ setup() {
   [[ "$joined" != *"/help"* ]]
 }
 
-@test "_CLAUDE_BUILTIN_COMMANDS array has 124 entries" {
-  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 124 ]]
+@test "_CLAUDE_BUILTIN_COMMANDS array has 125 entries" {
+  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 125 ]]
 }
 
 @test "_CLAUDE_BUILTIN_COMMANDS is readonly" {
   run bash -c 'source claude-completion.bash; _CLAUDE_BUILTIN_COMMANDS=(foo)'
   [[ "$status" -ne 0 ]]
+}
+
+@test "/artifact-diagramming is in builtin commands" {
+  local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
+  [[ "$joined" == *"/artifact-diagramming"* ]]
 }
 
 @test "/proactive is in builtin commands" {
@@ -638,6 +643,12 @@ setup() {
   [[ "${COMPREPLY[0]}" == "--bare" ]]
 }
 
+@test "claude plugin eval completes with its own flags" {
+  _simulate_completion "claude" "plugin" "eval" "--ev" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--eval-dir" ]]
+}
+
 @test "claude auth completes with its sub-subcommands" {
   _simulate_completion "claude" "auth" "" -- 2
   [[ "${#COMPREPLY[@]}" -eq 3 ]]
@@ -689,6 +700,34 @@ setup() {
   local joined=" ${COMPREPLY[*]} "
   [[ "$joined" == *" stable "* ]]
   [[ "$joined" == *" latest "* ]]
+}
+
+@test "claude remote-control completes with its own flags" {
+  _simulate_completion "claude" "remote-control" "--s" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 2 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" --session-id "* ]]
+  [[ "$joined" == *" --spawn "* ]]
+}
+
+@test "claude rc --spawn completes with spawn modes" {
+  _simulate_completion "claude" "rc" "--spawn" "" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 3 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" same-dir "* ]]
+  [[ "$joined" == *" worktree "* ]]
+  [[ "$joined" == *" session "* ]]
+}
+
+@test "claude self-hosted-runner completes with its own flags" {
+  _simulate_completion "claude" "self-hosted-runner" "--proxy-" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 2 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" --proxy-authorization-command "* ]]
+  [[ "$joined" == *" --proxy-authorization-file "* ]]
+  _simulate_completion "claude" "self-hosted-runner" "--defer" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--defer-shutdown-max-min" ]]
 }
 
 @test "subcommand flags replace the global flag list" {

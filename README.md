@@ -4,14 +4,14 @@ Bash completion script for the Claude Code CLI, providing tab completion for bui
 
 ## Features
 
-- Auto-completion for all Claude Code built-in slash commands (124 commands)
+- Auto-completion for all Claude Code built-in slash commands (125 commands)
 - Auto-completion for CLI flags and their values (75 flags)
 - Auto-completion for CLI subcommands (24 subcommands), each with its own sub-subcommands, flags, and values, down to `claude plugin marketplace add --scope`
 - Auto-completion for built-in tool names on `--tools`, `--allowedTools`, and `--disallowedTools`
 - Auto-completion for custom commands and skills from personal and project directories
 - Filesystem fallback when no programmatic completion matches
 
-> Command, flag, and subcommand counts reflect Claude Code v2.1.229. The lists cover what a default account can actually run, including command aliases and entries that `claude --help` hides, such as `claude attach`. Commands that a feature flag leaves switched off are excluded, so completion never offers anything the CLI will refuse.
+> Command, flag, and subcommand counts reflect Claude Code v2.1.238. The lists cover what a default account can actually run, including command aliases and entries that `claude --help` hides, such as `claude attach`. Commands that a feature flag leaves switched off are excluded, so completion never offers anything the CLI will refuse.
 
 ## Requirements
 
@@ -82,6 +82,7 @@ claude mcp                       # Shows add, add-json, get, list, serve, etc.
 claude mcp add --transport       # Shows stdio, sse, http
 claude plugin marketplace        # Shows add, list, remove, rm, update
 claude auth login --             # Shows --claudeai, --console, --email, --sso
+claude rc --spawn                # Shows same-dir, worktree, session
 
 # Custom commands and skills
 claude /my-custom-    # If you have custom commands in ~/.claude/commands/

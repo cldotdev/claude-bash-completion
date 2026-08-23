@@ -805,6 +805,44 @@ setup() {
   [[ "${COMPREPLY[0]}" == "--model" ]]
 }
 
+# --- session ID values ---
+
+# Build a fake ~/.claude/projects tree: two project directories, one session
+# each, plus a non-transcript file that must not be offered.
+_make_sessions() {
+  HOME="$BATS_TEST_TMPDIR/home"
+  mkdir -p "$HOME/.claude/projects/-home-user-alpha" \
+    "$HOME/.claude/projects/-home-user-beta"
+  touch -t 202601010000 "$HOME/.claude/projects/-home-user-alpha/aaaa1111-old.jsonl"
+  touch -t 202602010000 "$HOME/.claude/projects/-home-user-beta/aaaa2222-new.jsonl"
+  touch "$HOME/.claude/projects/-home-user-beta/notes.txt"
+}
+
+@test "--resume completes with session ids from every project directory" {
+  _make_sessions
+  _simulate_completion "claude" "--resume" "" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 2 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" aaaa1111-old "* ]]
+  [[ "$joined" == *" aaaa2222-new "* ]]
+  [[ "$joined" != *" notes "* ]]
+}
+
+@test "-r completes session ids newest first" {
+  _make_sessions
+  _simulate_completion "claude" "-r" "aaaa" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 2 ]]
+  [[ "${COMPREPLY[0]}" == "aaaa2222-new" ]]
+  [[ "${COMPREPLY[1]}" == "aaaa1111-old" ]]
+}
+
+@test "--resume completes nothing when no session has been recorded" {
+  HOME="$BATS_TEST_TMPDIR/empty-home"
+  mkdir -p "$HOME"
+  _simulate_completion "claude" "--resume" "" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 0 ]]
+}
+
 @test "_CLAUDE_TOOL_NAMES and _CLAUDE_VALUE_FLAGS are readonly" {
   run bash -c 'source claude-completion.bash; _CLAUDE_TOOL_NAMES=(foo)'
   [[ "$status" -ne 0 ]]

@@ -396,6 +396,15 @@ _claude_bash_completion()
       mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_TOOL_NAMES[*]}" -- "$cur")
       return 0
       ;;
+    -r|--resume)
+      # A transcript sits at ~/.claude/projects/<cwd, slashes turned into
+      # dashes>/<session-id>.jsonl. Every project directory is read, not just
+      # the current one, because resuming by ID falls back to scanning all of
+      # them: a session started elsewhere still resumes here.
+      _claude_reply_ordered "$(command ls -t "$HOME"/.claude/projects/*/*.jsonl \
+        2>/dev/null | sed 's|.*/||; s|\.jsonl$||')" "$cur"
+      return 0
+      ;;
     /code-review)
       if [[ "$cur" == -* ]]; then
         mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_CODE_REVIEW_FLAGS[*]}" -- "$cur")

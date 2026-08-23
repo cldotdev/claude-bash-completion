@@ -8,6 +8,7 @@ Bash completion script for the Claude Code CLI, providing tab completion for bui
 - Auto-completion for CLI flags and their values (75 flags)
 - Auto-completion for CLI subcommands (24 subcommands), each with its own sub-subcommands, flags, and values, down to `claude plugin marketplace add --scope`
 - Auto-completion for built-in tool names on `--tools`, `--allowedTools`, and `--disallowedTools`
+- Auto-completion for recorded session IDs on `--resume` and `-r`, most recent first
 - Auto-completion for custom commands and skills from personal and project directories
 - Filesystem fallback when no programmatic completion matches
 
@@ -68,6 +69,7 @@ claude --mo      # Completes to --model
 claude --model        # Shows model options: sonnet, opus, haiku, etc.
 claude --effort       # Shows effort levels: low, medium, high, xhigh, max
 claude --autocompact  # Shows window sizes: auto, 100k, 200k, 500k, 1m
+claude --resume       # Shows recorded session IDs, most recent first
 
 # Tool names
 claude --tools   # Shows Bash, Read, Edit, Skill, Workflow, etc. plus default
@@ -100,7 +102,7 @@ Sourcing the script does two things:
    # runs: command claude --model haiku "/format some text"
    ```
 
-Completions are drawn from static built-in lists (commands, flags, subcommands, and known flag values), dynamically discovered custom commands and skills (see [Custom Commands and Skills](#custom-commands-and-skills)), and a filesystem fallback when nothing else matches.
+Completions are drawn from static built-in lists (commands, flags, subcommands, and known flag values), dynamically discovered custom commands and skills (see [Custom Commands and Skills](#custom-commands-and-skills)), the session IDs read from `~/.claude/projects/` (see [Session IDs](#session-ids)), and a filesystem fallback when nothing else matches.
 
 To decide which of those applies, the script first scans the line for the subcommand, skipping the value of any flag that takes one, so `claude --model opus mcp` still resolves to `mcp`. Once a subcommand is found, its own lists take over from the global ones. Where the `bash-completion` package is installed, the script hands word splitting to `_init_completion` and path completion to `_filedir`, so quoted paths and paths containing spaces are handled correctly; without the package it falls back to reading `COMP_WORDS` and `compgen` directly.
 
@@ -116,6 +118,12 @@ The script automatically discovers custom slash commands and skills from these l
 Subdirectory structures are converted to colon-separated names (e.g., `commands/dev/rails.md` or `skills/dev/rails/SKILL.md` becomes `/dev:rails`).
 
 Project root is detected via `git rev-parse --show-toplevel`. Project-level discovery is skipped when not inside a git repository.
+
+## Session IDs
+
+`--resume` and `-r` complete with the session IDs of the transcripts under `~/.claude/projects/`, ordered by modification time so the most recent session comes first.
+
+Every project directory is read, not just the one for the current working directory, because resuming by ID falls back to scanning all of them: a session started elsewhere is still resumable from here.
 
 ## Development
 

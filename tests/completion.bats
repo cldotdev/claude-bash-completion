@@ -637,6 +637,24 @@ setup() {
   [[ "$joined" == *" rm "* ]]
 }
 
+@test "claude plugin update completes with its own flags" {
+  _simulate_completion "claude" "plugin" "update" "-" -- 3
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" -y "* ]]
+  [[ "$joined" == *" --yes "* ]]
+}
+
+@test "claude plugin update --scope reaches the managed scope, enable does not" {
+  _simulate_completion "claude" "plugin" "update" "--scope" "" -- 4
+  [[ "${#COMPREPLY[@]}" -eq 4 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" managed "* ]]
+  _simulate_completion "claude" "plugin" "enable" "--scope" "" -- 4
+  [[ "${#COMPREPLY[@]}" -eq 3 ]]
+  joined=" ${COMPREPLY[*]} "
+  [[ "$joined" != *" managed "* ]]
+}
+
 @test "claude plugin eval init completes with its own flags" {
   _simulate_completion "claude" "plugin" "eval" "init" "--ba" -- 4
   [[ "${#COMPREPLY[@]}" -eq 1 ]]

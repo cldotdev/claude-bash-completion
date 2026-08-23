@@ -73,7 +73,7 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (125 commands as of v2.1.238)
+# Built-in slash commands (125 commands as of v2.1.241)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /allowed-tools /android /app
   /artifact-capabilities /artifact-design /artifact-diagramming /artifacts
@@ -102,7 +102,7 @@ _CLAUDE_BUILTIN_COMMANDS=(
 )
 readonly -a _CLAUDE_BUILTIN_COMMANDS
 
-# CLI flags (75 flags as of v2.1.238)
+# CLI flags (75 flags as of v2.1.241)
 _CLAUDE_FLAGS=(
   --add-dir
   --agent --agents
@@ -142,7 +142,7 @@ _CLAUDE_FLAGS=(
 )
 readonly -a _CLAUDE_FLAGS
 
-# CLI subcommands (24 subcommands as of v2.1.238)
+# CLI subcommands (24 subcommands as of v2.1.241)
 _CLAUDE_SUBCOMMANDS=(
   agents attach auth auto-mode daemon doctor gateway import install
   logs mcp plugin plugins project rc remote-control respawn rm
@@ -200,7 +200,7 @@ readonly -a _CLAUDE_VARIADIC_FLAGS
 # Built-in tool names accepted by --tools, --allowedTools, and --disallowedTools.
 # `claude --help` carries no listing and the CLI accepts unknown names without
 # complaint, so this mirrors the built-in section of the tool ordering table in
-# the v2.1.238 binary. MCP and self-hosted-runner tools are left out: those
+# the v2.1.241 binary. MCP and self-hosted-runner tools are left out: those
 # names come from a connected server, not from the build. "default" comes from
 # the --tools help text.
 _CLAUDE_TOOL_NAMES=(
@@ -527,7 +527,10 @@ _claude_bash_completion()
         local nested=""
         case "$prev" in
           -s|--scope)
-            mapfile -t COMPREPLY < <(compgen -W "user project local" -- "$cur")
+            local scopes="user project local"
+            # Only `update` accepts this scope; the others reject it.
+            [[ "$sub" == "update" ]] && scopes+=" managed"
+            mapfile -t COMPREPLY < <(compgen -W "$scopes" -- "$cur")
             return 0
             ;;
         esac
@@ -554,7 +557,8 @@ _claude_bash_completion()
           init|new) _claude_reply_subcommand "$cur" "--author --author-email --description -f --force --with -h --help" "" ;;
           install|i) _claude_reply_subcommand "$cur" "--config -s --scope -y --yes -h --help" "" ;;
           disable) _claude_reply_subcommand "$cur" "-a --all -s --scope -h --help" "" ;;
-          enable|update) _claude_reply_subcommand "$cur" "-s --scope -h --help" "" ;;
+          enable) _claude_reply_subcommand "$cur" "-s --scope -h --help" "" ;;
+          update) _claude_reply_subcommand "$cur" "-s --scope -y --yes -h --help" "" ;;
           list) _claude_reply_subcommand "$cur" "--available --json -h --help" "" ;;
           prune|autoremove) _claude_reply_subcommand "$cur" "--dry-run -s --scope -y --yes -h --help" "" ;;
           tag) _claude_reply_subcommand "$cur" "--dry-run -f --force -m --message --push --remote -h --help" "" ;;

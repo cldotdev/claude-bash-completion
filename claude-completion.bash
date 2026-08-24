@@ -2,6 +2,11 @@
 # Claude Bash Completion
 # ========================================
 
+# Prevent warnings about readonly variables littering terminal if double-
+# sourced, e.g. loaded via /etc/bash_completion.d and shell spawned in tmux.
+[[ -z ${_CLAUDE_COMPLETION_LOADED:-} ]] || return 0 2>/dev/null || exit 0
+_CLAUDE_COMPLETION_LOADED=Y
+
 # Wrapper function to merge slash command arguments into a single parameter
 # This allows slash commands to receive multi-word arguments properly.
 # Example: `claude --model haiku /format 'some text'` becomes

@@ -47,7 +47,8 @@ source ~/.bashrc
 Copy the script to your system's bash completion directory:
 
 ```bash
-sudo cp claude-completion.bash /etc/bash_completion.d/claude
+sudo mkdir -p /usr/local/share/bash-completion/completions/
+sudo cp claude-completion.bash /usr/local/share/bash-completion/completions/claude
 ```
 
 Then reload your shell or start a new terminal session.

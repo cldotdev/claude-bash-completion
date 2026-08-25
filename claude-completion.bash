@@ -3,24 +3,30 @@
 # ========================================
 
 # Extract the name field from YAML frontmatter (between --- markers).
-# Returns an empty string if no frontmatter or no name field found.
+# Leaves the name in REPLY, empty when there is no frontmatter or no name.
+# The name comes back in REPLY rather than on stdout because the caller runs
+# this once per discovered file, and a command substitution would fork a
+# subshell every time even though nothing here execs.
 _claude_frontmatter_name() {
-  local file="$1"
+  local file="$1" line opened=""
+  REPLY=""
   [[ -f "$file" ]] || return 0
-  sed -n '
-    1{
-      /^---$/!q
-    }
-    2,/^---$/{
-      /^name: */{
-        s/^name: *//
-        s/^["'"'"']//
-        s/["'"'"']$//
-        p
-        q
-      }
-    }
-  ' "$file"
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    if [[ -z "$opened" ]]; then
+      [[ "$line" == "---" ]] || return 0
+      opened=1
+      continue
+    fi
+    [[ "$line" == "---" ]] && return 0
+    [[ "$line" == name:* ]] || continue
+    REPLY="${line#name:}"
+    while [[ "$REPLY" == " "* ]]; do
+      REPLY="${REPLY# }"
+    done
+    REPLY="${REPLY#[\"\']}"
+    REPLY="${REPLY%[\"\']}"
+    return 0
+  done < "$file"
 }
 
 # Discover custom commands/skills from a directory.
@@ -29,10 +35,9 @@ _claude_frontmatter_name() {
 _claude_discover_commands() {
   local base_dir="$1" find_pattern="$2" strip_suffix="$3"
   find -L "$base_dir" -type f -name "$find_pattern" 2>/dev/null | while read -r file; do
-    local name
-    name=$(_claude_frontmatter_name "$file")
-    if [[ -n "$name" ]]; then
-      echo "/$name"
+    _claude_frontmatter_name "$file"
+    if [[ -n "$REPLY" ]]; then
+      echo "/$REPLY"
     else
       local rel="${file#"$base_dir"/}"
       rel="${rel%"$strip_suffix"}"

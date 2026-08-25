@@ -76,36 +76,36 @@ FIXTURE
 }
 
 @test "extracts name from frontmatter" {
-  result=$(_claude_frontmatter_name "$FIXTURES/skills/my-skill/SKILL.md")
-  [[ "$result" == "custom-name" ]]
+  _claude_frontmatter_name "$FIXTURES/skills/my-skill/SKILL.md"
+  [[ "$REPLY" == "custom-name" ]]
 }
 
 @test "extracts double-quoted name" {
-  result=$(_claude_frontmatter_name "$FIXTURES/skills/quoted-skill/SKILL.md")
-  [[ "$result" == "quoted-name" ]]
+  _claude_frontmatter_name "$FIXTURES/skills/quoted-skill/SKILL.md"
+  [[ "$REPLY" == "quoted-name" ]]
 }
 
 @test "extracts single-quoted name" {
-  result=$(_claude_frontmatter_name "$FIXTURES/skills/single-quoted/SKILL.md")
-  [[ "$result" == "single-quoted-name" ]]
+  _claude_frontmatter_name "$FIXTURES/skills/single-quoted/SKILL.md"
+  [[ "$REPLY" == "single-quoted-name" ]]
 }
 
 @test "extracts name containing colon" {
-  result=$(_claude_frontmatter_name "$FIXTURES/skills/colon-skill/SKILL.md")
-  [[ "$result" == "dev:rails" ]]
+  _claude_frontmatter_name "$FIXTURES/skills/colon-skill/SKILL.md"
+  [[ "$REPLY" == "dev:rails" ]]
 }
 
 @test "returns empty for frontmatter without name" {
-  result=$(_claude_frontmatter_name "$FIXTURES/skills/no-name/SKILL.md")
-  [[ -z "$result" ]]
+  _claude_frontmatter_name "$FIXTURES/skills/no-name/SKILL.md"
+  [[ -z "$REPLY" ]]
 }
 
 @test "returns empty for file without frontmatter" {
-  result=$(_claude_frontmatter_name "$FIXTURES/skills/no-frontmatter/SKILL.md")
-  [[ -z "$result" ]]
+  _claude_frontmatter_name "$FIXTURES/skills/no-frontmatter/SKILL.md"
+  [[ -z "$REPLY" ]]
 }
 
 @test "returns empty for nonexistent file" {
-  result=$(_claude_frontmatter_name "$FIXTURES/does-not-exist.md")
-  [[ -z "$result" ]]
+  _claude_frontmatter_name "$FIXTURES/does-not-exist.md"
+  [[ -z "$REPLY" ]]
 }

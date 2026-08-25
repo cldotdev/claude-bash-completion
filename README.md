@@ -90,17 +90,18 @@ claude rc --spawn                # Shows same-dir, worktree, session
 claude /my-custom-    # If you have custom commands in ~/.claude/commands/
 ```
 
+### Slash Commands That Carry Arguments
+
+The CLI reads the prompt as a single argument and silently drops any positional argument after it. A slash command and its arguments therefore have to be quoted as a whole:
+
+```bash
+claude "/format some text"      # arrives as one prompt
+claude /format some text        # only /format arrives; the rest is discarded
+```
+
 ## How It Works
 
-Sourcing the script does two things:
-
-1. **Registers the completion function** via `complete -o default -F _claude_bash_completion claude`, so pressing Tab after `claude` runs the completion logic. The `-o default` option falls back to filesystem completion when no programmatic match applies.
-2. **Defines a `claude()` shell wrapper** that shadows the `claude` binary. When the command line contains a slash command, the wrapper merges the slash command and everything after it into a single argument before delegating to the real binary via `command claude`. This lets multi-word arguments reach the CLI intact:
-
-   ```bash
-   claude --model haiku /format 'some text'
-   # runs: command claude --model haiku "/format some text"
-   ```
+Loading the script registers the completion function via `complete -o default -F _claude_bash_completion claude`, so pressing Tab after `claude` runs the completion logic. The `-o default` option falls back to filesystem completion when no programmatic match applies. That registration is the whole of it: no alias, no wrapper, nothing shadowing the `claude` command itself.
 
 Completions are drawn from static built-in lists (commands, flags, subcommands, and known flag values), dynamically discovered custom commands and skills (see [Custom Commands and Skills](#custom-commands-and-skills)), the session IDs read from `~/.claude/projects/` (see [Session IDs](#session-ids)), and a filesystem fallback when nothing else matches.
 

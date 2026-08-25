@@ -857,3 +857,10 @@ _make_sessions() {
   reg=$(complete -p claude 2>/dev/null)
   [[ "$reg" == *"-o default"* ]]
 }
+
+# --- sourcing ---
+
+@test "sourcing the script defines no claude function" {
+  run bash -c 'source claude-completion.bash; type -t claude'
+  [[ "$output" != "function" ]]
+}

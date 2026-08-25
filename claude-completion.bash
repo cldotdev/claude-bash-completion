@@ -2,37 +2,6 @@
 # Claude Bash Completion
 # ========================================
 
-# Wrapper function to merge slash command arguments into a single parameter
-# This allows slash commands to receive multi-word arguments properly.
-# Example: `claude --model haiku /format 'some text'` becomes
-#          `claude --model haiku "/format some text"`
-claude() {
-  local args_before=()
-  local slash_cmd_with_rest=""
-  local found_slash=""
-
-  for arg in "$@"; do
-    if [[ -z "$found_slash" && "$arg" == /* ]]; then
-      found_slash=1
-      slash_cmd_with_rest="$arg"
-    elif [[ -n "$found_slash" ]]; then
-      slash_cmd_with_rest="$slash_cmd_with_rest $arg"
-    else
-      args_before+=("$arg")
-    fi
-  done
-
-  if [[ -n "$found_slash" ]]; then
-    if [[ ${#args_before[@]} -gt 0 ]]; then
-      command claude "${args_before[@]}" "$slash_cmd_with_rest"
-    else
-      command claude "$slash_cmd_with_rest"
-    fi
-  else
-    command claude "$@"
-  fi
-}
-
 # Extract the name field from YAML frontmatter (between --- markers).
 # Returns an empty string if no frontmatter or no name field found.
 _claude_frontmatter_name() {

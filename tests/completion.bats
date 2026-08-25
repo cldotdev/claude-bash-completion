@@ -917,11 +917,14 @@ _make_titles() {
 }
 
 # Point HOME at the test tree, move to a directory, and report in REPLY the
-# project directory Claude Code would record it under.
+# project directory Claude Code would record it under. Claude Code asks the
+# kernel for the working directory, so the name follows the physical path that
+# cd -P resolves to; where the temporary directory sits behind a symlink, as it
+# does on macOS, the logical path names another directory entirely.
 # Args: directory to work from.
 _project_dir() {
   HOME="$BATS_TEST_TMPDIR/home"
-  cd "$1" || return 1
+  cd -P "$1" || return 1
   REPLY="$HOME/.claude/projects/${PWD//[^a-zA-Z0-9]/-}"
 }
 

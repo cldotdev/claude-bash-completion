@@ -855,6 +855,18 @@ _make_sessions() {
   [[ "${#COMPREPLY[@]}" -eq 0 ]]
 }
 
+# --- surrounding tools ---
+
+@test "slash command completion survives git failing" {
+  local stub="$BATS_TEST_TMPDIR/stub"
+  mkdir -p "$stub"
+  printf '#!/bin/sh\nexit 128\n' > "$stub/git"
+  chmod +x "$stub/git"
+  PATH="$stub:$PATH" _simulate_completion "claude" "/hel" -- 1
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "/help" ]]
+}
+
 # --- sourcing ---
 
 @test "sourcing the script defines no claude function" {

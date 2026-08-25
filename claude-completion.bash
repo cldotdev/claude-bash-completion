@@ -598,8 +598,10 @@ _claude_bash_completion()
     local project_root project_commands_dir project_skills_dir
     local custom_commands="" personal_skills="" project_commands="" project_skills=""
 
-    # Detect project root via git
-    project_root=$(git rev-parse --show-toplevel 2>/dev/null)
+    # Detect project root via git. Every way git can fail means the same thing
+    # here as "not in a repository", including git not being installed at all,
+    # so keep its exit status from escaping the assignment.
+    project_root=$(git rev-parse --show-toplevel 2>/dev/null) || project_root=""
 
     custom_commands=$(_claude_discover_commands "$commands_dir" "*.md" ".md")
     personal_skills=$(_claude_discover_commands "$skills_dir" "SKILL.md" "/SKILL.md")

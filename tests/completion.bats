@@ -22,11 +22,28 @@ _simulate_completion() {
 
   COMP_WORDS=("${words[@]}")
   COMP_CWORD="$cword"
+  _set_comp_line
   COMPREPLY=()
   _claude_bash_completion
 }
 
+# Helper: derive COMP_LINE and COMP_POINT from COMP_WORDS and COMP_CWORD,
+# the way bash hands them to a completion function. The package parser reads
+# the line rather than the words, so the fallback and the bash-completion
+# paths only agree once both are set.
+_set_comp_line() {
+  COMP_LINE="${COMP_WORDS[*]}"
+  local consumed="${COMP_WORDS[*]:0:COMP_CWORD+1}"
+  COMP_POINT="${#consumed}"
+}
+
+# BASH_COMPLETION_LIB points at an installed bash_completion to exercise the
+# package path; leaving it unset covers the fallback path instead.
 setup() {
+  if [[ -n "${BASH_COMPLETION_LIB:-}" ]]; then
+    # shellcheck disable=SC1090
+    source "$BASH_COMPLETION_LIB"
+  fi
   source "$BATS_TEST_DIRNAME/../claude-completion.bash"
 }
 
@@ -168,6 +185,7 @@ setup() {
   # word/cword separator, so a literal "--" word cannot pass through it.
   COMP_WORDS=(claude /code-review --)
   COMP_CWORD=2
+  _set_comp_line
   COMPREPLY=()
   _claude_bash_completion
   [[ "${#COMPREPLY[@]}" -eq 2 ]]

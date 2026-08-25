@@ -896,6 +896,141 @@ _make_sessions() {
   [[ "${#COMPREPLY[@]}" -eq 0 ]]
 }
 
+# --- session titles ---
+
+# Build a project directory for the working directory, with one titled session
+# per case: a plain title, one carrying colons, one carrying a space, one that
+# would run a command if it were ever expanded, and one renamed mid-session.
+# A second project directory holds a title that belongs to another directory.
+_make_titles() {
+  local dir
+  _project_dir "$BATS_TEST_TMPDIR" || return 1
+  dir="$REPLY"
+  mkdir -p "$dir" "$HOME/.claude/projects/-home-user-elsewhere"
+  _write_title "$dir/aaaa1111-plain.jsonl" 202601010000 "planned-work"
+  _write_title "$dir/aaaa2222-colons.jsonl" 202602010000 "dev:demo:#7788"
+  _write_title "$dir/aaaa3333-space.jsonl" 202603010000 "fix login bug"
+  _write_title "$dir/aaaa4444-expand.jsonl" 202604010000 "\$(touch $BATS_TEST_TMPDIR/pwned)"
+  _write_title "$dir/aaaa5555-renamed.jsonl" 202605010000 "old-name" "renamed-later"
+  _write_title "$HOME/.claude/projects/-home-user-elsewhere/aaaa6666-other.jsonl" \
+    202606010000 "other-project"
+}
+
+# Point HOME at the test tree, move to a directory, and report in REPLY the
+# project directory Claude Code would record it under.
+# Args: directory to work from.
+_project_dir() {
+  HOME="$BATS_TEST_TMPDIR/home"
+  cd "$1" || return 1
+  REPLY="$HOME/.claude/projects/${PWD//[^a-zA-Z0-9]/-}"
+}
+
+# Write a transcript carrying one custom-title record per title given, so that
+# more than one stands for a session renamed while it ran.
+# Args: path, timestamp, then every title.
+_write_title() {
+  local path="$1" stamp="$2" title
+  shift 2
+  : > "$path"
+  for title in "$@"; do
+    printf '{"type":"custom-title","customTitle":"%s","sessionId":"x"}\n' "$title" >> "$path"
+  done
+  touch -t "$stamp" "$path"
+}
+
+@test "--resume completes with session titles ahead of session ids" {
+  _make_titles
+  _simulate_completion "claude" "--resume" "" -- 2
+  [[ "${COMPREPLY[0]}" == "renamed-later" ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" planned-work "* ]]
+  [[ "$joined" == *" aaaa1111-plain "* ]]
+}
+
+@test "--resume offers the live title of a renamed session" {
+  _make_titles
+  _simulate_completion "claude" "--resume" "" -- 2
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" renamed-later "* ]]
+  [[ "$joined" != *" old-name "* ]]
+}
+
+@test "--resume leaves out titles from another project directory" {
+  _make_titles
+  _simulate_completion "claude" "--resume" "other" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 0 ]]
+}
+
+@test "--resume keeps offering ids from another project directory" {
+  _make_titles
+  _simulate_completion "claude" "--resume" "aaaa6666" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "aaaa6666-other" ]]
+}
+
+@test "--resume escapes a title the shell would otherwise split" {
+  _make_titles
+  _simulate_completion "claude" "--resume" "fix" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == 'fix\ login\ bug' ]]
+}
+
+@test "--resume does not expand a title on the way to the reply" {
+  _make_titles
+  _simulate_completion "claude" "--resume" "" -- 2
+  [[ ! -e "$BATS_TEST_TMPDIR/pwned" ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *'touch'* ]]
+}
+
+@test "-r completes a title past the colons bash splits it at" {
+  _make_titles
+  _simulate_line "claude -r dev:demo:"
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "#7788" ]]
+}
+
+@test "-r completes a title from the fragment after the first colon" {
+  _make_titles
+  _simulate_line "claude -r dev:"
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "demo:#7788" ]]
+}
+
+@test "--resume finds titles from a directory reached through a symlink" {
+  _make_titles
+  ln -s "$BATS_TEST_TMPDIR" "$BATS_TEST_TMPDIR/../link-to-tmpdir"
+  cd "$BATS_TEST_TMPDIR/../link-to-tmpdir" || return 1
+  _simulate_completion "claude" "--resume" "planned" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "planned-work" ]]
+}
+
+@test "--resume finds titles for a path too long to name a directory after" {
+  local deep="$BATS_TEST_TMPDIR" encoded dir
+  while [[ "${#deep}" -le 200 ]]; do
+    deep="$deep/aaaaaaaaaaaaaaaaaaaa"
+  done
+  mkdir -p "$deep"
+  _project_dir "$deep" || return 1
+  encoded="${REPLY##*/}"
+  dir="$HOME/.claude/projects/${encoded:0:200}-1a2b3c"
+  mkdir -p "$dir"
+  _write_title "$dir/aaaa7777-deep.jsonl" 202601010000 "deep-path-title"
+  _simulate_completion "claude" "--resume" "deep" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "deep-path-title" ]]
+}
+
+@test "--resume completes ids where the working directory has no sessions" {
+  _make_sessions
+  cd "$BATS_TEST_TMPDIR" || return 1
+  _simulate_completion "claude" "--resume" "" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 2 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" aaaa2222-new "* ]]
+}
+
 # --- complete registration ---
 
 @test "complete registration includes -o default" {

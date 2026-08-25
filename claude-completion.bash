@@ -209,6 +209,12 @@ _CLAUDE_PLUGIN_CLI_SUBCOMMANDS=(
 _CLAUDE_PLUGIN_CLI_MARKETPLACE_SUBCOMMANDS=(add list remove rm update)
 _CLAUDE_PROJECT_SUBCOMMANDS=(purge)
 
+# How many of a project's transcripts are read for their titles. The live
+# title is the last record in a transcript, so every transcript opened is read
+# to the end: 50 of them come to tens of megabytes on a well-worked project,
+# and all of them to hundreds.
+_CLAUDE_TITLE_SCAN=50
+
 # Report whether a flag appears in the given list.
 # Args: flag, then the list entries.
 _claude_flag_in() {
@@ -265,14 +271,19 @@ _claude_filedir() {
   fi
 }
 
+# Hand the candidates back in the order they were built rather than sorted.
+# compopt fails when called outside a completion; the ordering is a nicety,
+# not a reason to hand the caller a failure.
+_claude_keep_order() {
+  compopt -o nosort 2>/dev/null || true
+}
+
 # Offer a word list, keeping the order it is written in, so ordered lists such
 # as effort levels do not come back alphabetized.
 # Args: word list, current word.
 _claude_reply_ordered() {
   mapfile -t COMPREPLY < <(compgen -W "$1" -- "$2")
-  # compopt fails when called outside a completion; the ordering is a nicety,
-  # not a reason to hand the caller a failure.
-  compopt -o nosort 2>/dev/null || true
+  _claude_keep_order
 }
 
 # Offer a subcommand's own flags when a flag is being typed, and its
@@ -285,6 +296,72 @@ _claude_reply_subcommand() {
   else
     mapfile -t COMPREPLY < <(compgen -W "${3-}" -- "$1")
   fi
+}
+
+# Report the transcript directory for a working directory in REPLY, empty
+# where there is none. Claude Code names it after the directory with every
+# character outside [a-zA-Z0-9] turned into a dash, keeping the first 200 and
+# appending a hash of the path once that runs longer. The hash cannot be
+# reproduced here, so a long path is matched on the part that can be.
+# Args: working directory.
+_claude_project_dir() {
+  local encoded="${1//[^a-zA-Z0-9]/-}" root="$HOME/.claude/projects"
+  local -a matches
+  REPLY=""
+  if [[ "${#encoded}" -gt 200 ]]; then
+    matches=("$root/${encoded:0:200}"-*/)
+    if [[ -d "${matches[0]-}" ]]; then
+      REPLY="${matches[0]%/}"
+    fi
+  elif [[ -d "$root/$encoded" ]]; then
+    REPLY="$root/$encoded"
+  fi
+  return 0
+}
+
+# Collect the titles of the current directory's sessions into _claude_titles,
+# newest first. Claude Code resolves a title only among the sessions it holds
+# for the working directory, so titles from elsewhere are left out; a title
+# reached from the wrong directory would open an empty picker rather than
+# resume anything. The last record in a transcript is the live title, an
+# earlier one having been replaced by /rename.
+_claude_session_titles() {
+  local dir listing line rest file title REPLY
+  local -a files=()
+  local -A latest=() emitted=()
+  _claude_titles=()
+  # Claude Code records the directory as the kernel reports it, which is what
+  # PWD holds unless the shell walked in through a symlink. Asking the shell
+  # to resolve one costs a subshell, so PWD is tried first and paid for only
+  # when it turns up nothing.
+  _claude_project_dir "$PWD"
+  dir="$REPLY"
+  if [[ -z "$dir" ]]; then
+    _claude_project_dir "$(pwd -P)"
+    dir="$REPLY"
+  fi
+  [[ -n "$dir" ]] || return 0
+  listing=$(command ls -t "$dir"/*.jsonl 2>/dev/null)
+  # Handed no files at all, grep would read the terminal it inherited.
+  [[ -n "$listing" ]] || return 0
+  mapfile -t files <<< "$listing"
+  files=("${files[@]:0:$_CLAUDE_TITLE_SCAN}")
+  listing=$(grep -H -o '"customTitle":"[^"]*"' "${files[@]}" 2>/dev/null)
+  [[ -n "$listing" ]] || return 0
+  while IFS= read -r line; do
+    rest="${line#"$dir"/}"
+    file="${rest%%:*}"
+    title="${rest#*:\"customTitle\":\"}"
+    latest["$file"]="${title%\"}"
+  done <<< "$listing"
+  for file in "${files[@]}"; do
+    title="${latest["${file##*/}"]-}"
+    if [[ -n "$title" && -z "${emitted["$title"]-}" ]]; then
+      emitted["$title"]=1
+      _claude_titles+=("$title")
+    fi
+  done
+  return 0
 }
 
 # Rebuild words, cword, cur, and prev with colon-separated words kept whole.
@@ -347,14 +424,37 @@ _claude_ltrim_colon() {
   fi
 }
 
+# Offer values that are free-form text rather than identifiers, keeping the
+# order they arrive in. compgen -W is no good for these: it splits on spaces
+# and expands what it is given, so a session title holding a command
+# substitution would run on Tab. Each value is escaped whole, since what needs
+# escaping depends on where in the word a character sits. trim_word carries
+# the current word escaped the same way, so that the trim the caller runs
+# afterwards still recognizes its own prefix in the candidates.
+# Args: current word, then every value.
+_claude_reply_values() {
+  local cur="$1" value
+  shift
+  COMPREPLY=()
+  for value in "$@"; do
+    if [[ "$value" == "$cur"* ]]; then
+      printf -v value '%q' "$value"
+      COMPREPLY+=("$value")
+    fi
+  done
+  printf -v trim_word '%q' "$cur"
+  _claude_keep_order
+}
+
 # Entry point. The completion itself runs in _claude_complete, which leaves
 # its candidates in COMPREPLY and the word it matched them against in cur.
+# Where it escaped those candidates, trim_word holds cur escaped to match.
 _claude_bash_completion()
 {
-  local cur prev words cword
+  local cur prev words cword trim_word
   COMPREPLY=()
   _claude_complete
-  _claude_ltrim_colon "$cur"
+  _claude_ltrim_colon "${trim_word-$cur}"
   return 0
 }
 
@@ -440,12 +540,24 @@ _claude_complete()
       return 0
       ;;
     -r|--resume)
-      # A transcript sits at ~/.claude/projects/<cwd, slashes turned into
-      # dashes>/<session-id>.jsonl. Every project directory is read, not just
-      # the current one, because resuming by ID falls back to scanning all of
-      # them: a session started elsewhere still resumes here.
-      _claude_reply_ordered "$(command ls -t "$HOME"/.claude/projects/*/*.jsonl \
-        2>/dev/null | sed 's|.*/||; s|\.jsonl$||')" "$cur"
+      # A transcript sits at ~/.claude/projects/<encoded cwd>/<session-id>.jsonl.
+      # Every project directory is read for ids, not just the current one,
+      # because resuming by id falls back to scanning all of them: a session
+      # started elsewhere still resumes here. Titles lead (see
+      # _claude_session_titles), a session being far easier to recognize by
+      # the name it was given than by its id.
+      # The word already typed narrows the glob, which spares ls a stat of
+      # every transcript on the machine. Quoted, it matches literally, exactly
+      # as the prefix match on the candidates does.
+      local -a _claude_titles ids=()
+      local listing
+      _claude_session_titles
+      listing=$(command ls -t "$HOME"/.claude/projects/*/"$cur"*.jsonl \
+        2>/dev/null | sed 's|.*/||; s|\.jsonl$||')
+      # mapfile reads a here-string in blocks; from a pipe it reads a byte at
+      # a time, which costs more than everything else here put together.
+      [[ -z "$listing" ]] || mapfile -t ids <<< "$listing"
+      _claude_reply_values "$cur" "${_claude_titles[@]}" "${ids[@]}"
       return 0
       ;;
     /code-review)

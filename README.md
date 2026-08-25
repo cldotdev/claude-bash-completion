@@ -10,7 +10,7 @@ Bash completion script for the Claude Code CLI, providing tab completion for bui
 - Auto-completion for CLI flags and their values (75 flags)
 - Auto-completion for CLI subcommands (24 subcommands), each with its own sub-subcommands, flags, and values, down to `claude plugin marketplace add --scope`
 - Auto-completion for built-in tool names on `--tools`, `--allowedTools`, and `--disallowedTools`
-- Auto-completion for recorded session IDs on `--resume` and `-r`, most recent first
+- Auto-completion for recorded session titles and IDs on `--resume` and `-r`, most recent first
 - Auto-completion for custom commands and skills from personal and project directories
 - Slash command completion reaches inside an opening quote, which is where a command that carries arguments has to be typed
 - Filesystem fallback when no programmatic completion matches
@@ -19,7 +19,7 @@ Bash completion script for the Claude Code CLI, providing tab completion for bui
 
 ## Requirements
 
-- Bash 4.0 or newer, because completion results are collected with `mapfile`. Bash 4.4 adds `compopt -o nosort`, which keeps session IDs in most-recent-first order; older shells sort them alphabetically instead.
+- Bash 4.0 or newer, because completion results are collected with `mapfile` and session titles are deduplicated through an associative array. Bash 4.4 adds `compopt -o nosort`, which keeps session titles and IDs in most-recent-first order; older shells sort them alphabetically instead.
 - [Claude Code](https://github.com/anthropics/claude-code) installed and configured
 - `bash-completion` 2.0 or newer for [Method 1](#method-1-user-completion-directory-recommended) and [Method 2](#method-2-system-completion-directory), which both rely on its on-demand loading. [Method 3](#method-3-source-in-bashrc) needs no package.
 - `git`, to discover project-level commands and skills. Everything else works without it.
@@ -109,7 +109,8 @@ claude --mo      # Completes to --model
 claude --model        # Shows model options: sonnet, opus, haiku, etc.
 claude --effort       # Shows effort levels: low, medium, high, xhigh, max
 claude --autocompact  # Shows window sizes: auto, 100k, 200k, 500k, 1m
-claude --resume       # Shows recorded session IDs, most recent first
+claude --resume       # Shows recorded session titles, then IDs, most recent first
+claude -r dev:        # Drills into titles, a colon at a time
 
 # Tool names
 claude --tools   # Shows Bash, Read, Edit, Skill, Workflow, etc. plus default
@@ -145,7 +146,7 @@ Completion reaches inside an opening quote, so `claude '/for` plus Tab fills in 
 
 Loading the script registers the completion function via `complete -o default -F _claude_bash_completion claude`, so pressing Tab after `claude` runs the completion logic. The `-o default` option falls back to filesystem completion when no programmatic match applies. That registration is the whole of it: no alias, no wrapper, nothing shadowing the `claude` command itself.
 
-Completions are drawn from static built-in lists (commands, flags, subcommands, and known flag values), dynamically discovered custom commands and skills (see [Custom Commands and Skills](#custom-commands-and-skills)), the session IDs read from `~/.claude/projects/` (see [Session IDs](#session-ids)), and a filesystem fallback when nothing else matches.
+Completions are drawn from static built-in lists (commands, flags, subcommands, and known flag values), dynamically discovered custom commands and skills (see [Custom Commands and Skills](#custom-commands-and-skills)), the session titles and IDs read from `~/.claude/projects/` (see [Session Titles and IDs](#session-titles-and-ids)), and a filesystem fallback when nothing else matches.
 
 To decide which of those applies, the script first scans the line for the subcommand, skipping the value of any flag that takes one, so `claude --model opus mcp` still resolves to `mcp`. Once a subcommand is found, its own lists take over from the global ones. Where the `bash-completion` package is loaded, the script hands word splitting and path completion to it, so quoted paths and paths containing spaces are handled correctly. Version 2.12 renamed that interface: the script reaches for `_comp_initialize` and `_comp_compgen` first and falls back to `_init_completion` and `_filedir`, which older releases define natively and newer ones leave to a compat file that not every distribution ships. Without the package at all, it reads `COMP_WORDS` and calls `compgen` directly.
 
@@ -164,11 +165,15 @@ Project root is detected via `git rev-parse --show-toplevel`. Project-level disc
 
 Commands and skills that arrive through a plugin are left out. Whether one of them is active in the current directory depends on the plugin's install scope and on the `enabledPlugins` settings that apply there, and completion has no dependable way to reproduce that decision. Offering a command the CLI would refuse is worse than offering nothing, so plugin entries stay out until the state can be read reliably.
 
-## Session IDs
+## Session Titles and IDs
 
-`--resume` and `-r` complete with the session IDs of the transcripts under `~/.claude/projects/`, ordered by modification time so the most recent session comes first.
+`--resume` and `-r` complete with the titles and IDs of the sessions recorded under `~/.claude/projects/`, ordered by modification time so the most recent comes first. Titles lead, a session being far easier to recognize by the name it was given with `-n`, `--name`, or `/rename` than by its ID.
 
-Every project directory is read, not just the one for the current working directory, because resuming by ID falls back to scanning all of them: a session started elsewhere is still resumable from here.
+The CLI resolves a title by matching it in full against the sessions it holds for the working directory, resuming outright when exactly one matches and otherwise opening the picker with it as a search term. Completion follows that scope: titles come from the current directory alone, since one reached from anywhere else would open an empty picker rather than resume anything. IDs are drawn from every project directory, because resuming by ID falls back to scanning all of them and a session started elsewhere is still resumable from here.
+
+A title lives in the transcript rather than in an index, so only the 50 most recently modified transcripts of the current directory are searched. That covers any session recent enough to still be remembered by name, and keeps a project carrying hundreds of megabytes of history from being read through on every Tab.
+
+Titles are free-form text, so they are matched and escaped in the shell rather than passed through `compgen -W`, which would split one holding a space and expand one holding a command substitution. Bash rewrites only the text after the last colon, so a title carrying colons completes one segment at a time: `claude -r dev:` offers what follows the first colon.
 
 ## Development
 

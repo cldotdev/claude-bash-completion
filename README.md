@@ -1,5 +1,7 @@
 # Claude Bash Completion
 
+[![CI](https://github.com/cldotdev/claude-bash-completion/actions/workflows/ci.yml/badge.svg?branch=master&event=push)](https://github.com/cldotdev/claude-bash-completion/actions/workflows/ci.yml)
+
 Bash completion script for the Claude Code CLI, providing tab completion for built-in slash commands, CLI flags and subcommands, and custom commands and skills.
 
 ## Features

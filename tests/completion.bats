@@ -280,11 +280,6 @@ setup() {
   [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 125 ]]
 }
 
-@test "_CLAUDE_BUILTIN_COMMANDS is readonly" {
-  run bash -c 'source claude-completion.bash; _CLAUDE_BUILTIN_COMMANDS=(foo)'
-  [[ "$status" -ne 0 ]]
-}
-
 @test "/artifact-diagramming is in builtin commands" {
   local joined="${_CLAUDE_BUILTIN_COMMANDS[*]}"
   [[ "$joined" == *"/artifact-diagramming"* ]]
@@ -503,11 +498,6 @@ setup() {
   [[ "${#_CLAUDE_FLAGS[@]}" -eq 75 ]]
 }
 
-@test "_CLAUDE_FLAGS is readonly" {
-  run bash -c 'source claude-completion.bash; _CLAUDE_FLAGS=(foo)'
-  [[ "$status" -ne 0 ]]
-}
-
 # --- subcommand completions ---
 
 @test "subcommand completes at position 1" {
@@ -565,11 +555,6 @@ setup() {
 
 @test "_CLAUDE_SUBCOMMANDS array has 24 entries" {
   [[ "${#_CLAUDE_SUBCOMMANDS[@]}" -eq 24 ]]
-}
-
-@test "_CLAUDE_SUBCOMMANDS is readonly" {
-  run bash -c 'source claude-completion.bash; _CLAUDE_SUBCOMMANDS=(foo)'
-  [[ "$status" -ne 0 ]]
 }
 
 @test "slash command completion still works at position 1" {
@@ -843,13 +828,6 @@ _make_sessions() {
   [[ "${#COMPREPLY[@]}" -eq 0 ]]
 }
 
-@test "_CLAUDE_TOOL_NAMES and _CLAUDE_VALUE_FLAGS are readonly" {
-  run bash -c 'source claude-completion.bash; _CLAUDE_TOOL_NAMES=(foo)'
-  [[ "$status" -ne 0 ]]
-  run bash -c 'source claude-completion.bash; _CLAUDE_VALUE_FLAGS=(foo)'
-  [[ "$status" -ne 0 ]]
-}
-
 # --- complete registration ---
 
 @test "complete registration includes -o default" {
@@ -863,4 +841,10 @@ _make_sessions() {
 @test "sourcing the script defines no claude function" {
   run bash -c 'source claude-completion.bash; type -t claude'
   [[ "$output" != "function" ]]
+}
+
+@test "sourcing the script twice is silent" {
+  run bash -c 'source claude-completion.bash; source claude-completion.bash'
+  [[ "$status" -eq 0 ]]
+  [[ -z "$output" ]]
 }

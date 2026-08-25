@@ -69,7 +69,6 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /ultrareview /undo /update-config /upgrade /usage /usage-credits
   /verify /voice /workflows
 )
-readonly -a _CLAUDE_BUILTIN_COMMANDS
 
 # CLI flags (75 flags as of v2.1.241)
 _CLAUDE_FLAGS=(
@@ -109,7 +108,6 @@ _CLAUDE_FLAGS=(
   -v --version
   -w --worktree
 )
-readonly -a _CLAUDE_FLAGS
 
 # CLI subcommands (24 subcommands as of v2.1.241)
 _CLAUDE_SUBCOMMANDS=(
@@ -117,28 +115,22 @@ _CLAUDE_SUBCOMMANDS=(
   logs mcp plugin plugins project rc remote-control respawn rm
   self-hosted-runner setup-token stop ultrareview update upgrade
 )
-readonly -a _CLAUDE_SUBCOMMANDS
 
 # Effort levels (shared by --effort flag and /code-review command)
 _CLAUDE_EFFORT_LEVELS=(low medium high xhigh max)
-readonly -a _CLAUDE_EFFORT_LEVELS
 
 # Flags accepted by the /code-review command (shared by both flag paths)
 _CLAUDE_CODE_REVIEW_FLAGS=(--comment --fix)
-readonly -a _CLAUDE_CODE_REVIEW_FLAGS
 
 # Positional values accepted by the /code-review command: the effort levels
 # plus "ultra", which escalates the review to the cloud-hosted /ultrareview
 _CLAUDE_CODE_REVIEW_ARGS=("${_CLAUDE_EFFORT_LEVELS[@]}" ultra)
-readonly -a _CLAUDE_CODE_REVIEW_ARGS
 
 # Subcommands accepted by the /plugin command
 _CLAUDE_PLUGIN_SUBCOMMANDS=(install uninstall enable disable list marketplace)
-readonly -a _CLAUDE_PLUGIN_SUBCOMMANDS
 
 # Sub-subcommands accepted by /plugin marketplace
 _CLAUDE_PLUGIN_MARKETPLACE_SUBCOMMANDS=(add remove list update)
-readonly -a _CLAUDE_PLUGIN_MARKETPLACE_SUBCOMMANDS
 
 # Flags that consume the following word as their value. Scanning for the
 # subcommand skips those values, so `claude --model opus mcp` still resolves to
@@ -156,7 +148,6 @@ _CLAUDE_VALUE_FLAGS=(
   --system-prompt --system-prompt-file --teleport --tmux --tools
   -w --worktree
 )
-readonly -a _CLAUDE_VALUE_FLAGS
 
 # Flags that take several space-separated values. Every one of those words
 # belongs to the flag, so the flag governs completion until the next one appears.
@@ -164,7 +155,6 @@ _CLAUDE_VARIADIC_FLAGS=(
   --add-dir --allowedTools --allowed-tools --betas
   --disallowedTools --disallowed-tools --file --tools
 )
-readonly -a _CLAUDE_VARIADIC_FLAGS
 
 # Built-in tool names accepted by --tools, --allowedTools, and --disallowedTools.
 # `claude --help` carries no listing and the CLI accepts unknown names without
@@ -196,7 +186,6 @@ _CLAUDE_TOOL_NAMES=(
   WebBrowser WebFetch WebSearch Workflow Write
   default
 )
-readonly -a _CLAUDE_TOOL_NAMES
 
 # Sub-subcommands of the CLI subcommands that have them. `claude plugin` and
 # `claude plugin marketplace` accept more than their /plugin slash counterparts,
@@ -214,10 +203,6 @@ _CLAUDE_PLUGIN_CLI_SUBCOMMANDS=(
 )
 _CLAUDE_PLUGIN_CLI_MARKETPLACE_SUBCOMMANDS=(add list remove rm update)
 _CLAUDE_PROJECT_SUBCOMMANDS=(purge)
-readonly -a _CLAUDE_AUTH_SUBCOMMANDS _CLAUDE_AUTO_MODE_SUBCOMMANDS
-readonly -a _CLAUDE_DAEMON_SUBCOMMANDS _CLAUDE_MCP_SUBCOMMANDS
-readonly -a _CLAUDE_PLUGIN_CLI_SUBCOMMANDS
-readonly -a _CLAUDE_PLUGIN_CLI_MARKETPLACE_SUBCOMMANDS _CLAUDE_PROJECT_SUBCOMMANDS
 
 # Report whether a flag appears in the given list.
 # Args: flag, then the list entries.

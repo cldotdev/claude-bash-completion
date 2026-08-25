@@ -259,9 +259,9 @@ _claude_filedir() {
   elif declare -F _filedir >/dev/null; then
     _filedir "$@"
   elif [[ "${1-}" == "-d" ]]; then
-    mapfile -t COMPREPLY < <(compgen -d -- "${COMP_WORDS[COMP_CWORD]}")
+    mapfile -t COMPREPLY < <(compgen -d -- "$cur")
   else
-    mapfile -t COMPREPLY < <(compgen -f -- "${COMP_WORDS[COMP_CWORD]}")
+    mapfile -t COMPREPLY < <(compgen -f -- "$cur")
   fi
 }
 
@@ -287,23 +287,92 @@ _claude_reply_subcommand() {
   fi
 }
 
+# Rebuild words, cword, cur, and prev with colon-separated words kept whole.
+# Stands in for the -n option of the bash-completion parsers where the package
+# is absent. COMP_WORDS alone cannot tell `a:b` from `a : b`, so adjacency is
+# read off COMP_LINE; where the shell leaves it unset, nothing is joined and
+# the raw arrays come through as before.
+_claude_word_list() {
+  local i word rest gap adjacent last pos=0
+  words=()
+  cword=-1
+  for ((i = 0; i < ${#COMP_WORDS[@]}; i++)); do
+    word="${COMP_WORDS[i]}"
+    adjacent=""
+    if [[ -n "$word" && "${COMP_LINE:pos}" == *"$word"* ]]; then
+      rest="${COMP_LINE:pos}"
+      gap="${rest%%"$word"*}"
+      pos=$((pos + ${#gap} + ${#word}))
+      [[ -n "$gap" ]] || adjacent=1
+    fi
+    last=$((${#words[@]} - 1))
+    if [[ -n "$adjacent" && "$last" -ge 0 ]] &&
+      [[ "${words[last]}" == *: || "$word" == :* ]]; then
+      words[last]+="$word"
+    else
+      words+=("$word")
+    fi
+    if [[ "$i" -eq "$COMP_CWORD" ]]; then
+      cword=$((${#words[@]} - 1))
+    fi
+  done
+  # A cursor past the last word sits on an empty one, which is where bash puts
+  # it after a trailing space.
+  if [[ "$cword" -lt 0 ]]; then
+    cword=${#words[@]}
+  fi
+  cur="${words[cword]-}"
+  prev=""
+  if [[ "$cword" -gt 0 ]]; then
+    prev="${words[cword - 1]}"
+  fi
+}
+
+# Drop the part of each candidate that bash will not replace. Bash rewrites
+# only the text after the last COMP_WORDBREAKS character, so a candidate that
+# still carries what precedes it is inserted on top of what is already typed.
+# Args: current word.
+_claude_ltrim_colon() {
+  local prefix i
+  [[ "$1" == *:* && "$COMP_WORDBREAKS" == *:* ]] || return 0
+  if declare -F _comp_ltrim_colon_completions >/dev/null; then
+    _comp_ltrim_colon_completions "$1"
+  elif declare -F __ltrim_colon_completions >/dev/null; then
+    __ltrim_colon_completions "$1"
+  else
+    prefix="${1%"${1##*:}"}"
+    for i in "${!COMPREPLY[@]}"; do
+      COMPREPLY[i]="${COMPREPLY[i]#"$prefix"}"
+    done
+  fi
+}
+
+# Entry point. The completion itself runs in _claude_complete, which leaves
+# its candidates in COMPREPLY and the word it matched them against in cur.
 _claude_bash_completion()
 {
   local cur prev words cword
   COMPREPLY=()
+  _claude_complete
+  _claude_ltrim_colon "$cur"
+  return 0
+}
+
+_claude_complete()
+{
   if declare -F _comp_initialize >/dev/null; then
     # bash-completion's parser understands quoting and redirections; the raw
     # arrays stand in where the package is not installed. _comp_initialize is
     # the 2.12 name for _init_completion, which now lives in a compat file
-    # that not every distribution ships.
-    _comp_initialize || return 0
+    # that not every distribution ships. Both take -n to hold a character back
+    # from COMP_WORDBREAKS: without it a colon splits the word under the
+    # cursor, which leaves cur holding a fragment and prev holding a colon
+    # instead of the flag the value belongs to.
+    _comp_initialize -n : || return 0
   elif declare -F _init_completion >/dev/null; then
-    _init_completion || return 0
+    _init_completion -n : || return 0
   else
-    words=("${COMP_WORDS[@]}")
-    cword="$COMP_CWORD"
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    _claude_word_list
   fi
 
   # Completion can start inside an opening quote, which bash keeps in the

@@ -4,25 +4,48 @@
 # Usage: _simulate_completion "word0" "word1" ... -- cword_index
 # Sets COMP_WORDS, COMP_CWORD, calls the completion function, and
 # leaves COMPREPLY populated for assertions.
+# The separator is the last `--`, so a word that is itself `--` can be passed.
 _simulate_completion() {
+  local args=("$@")
   local words=()
-  local cword=""
-  local parsing_words=1
-  for arg in "$@"; do
-    if [[ "$arg" == "--" ]]; then
-      parsing_words=0
-      continue
-    fi
-    if [[ "$parsing_words" -eq 1 ]]; then
-      words+=("$arg")
-    else
-      cword="$arg"
-    fi
+  local sep=-1 i
+  for ((i = 0; i < ${#args[@]}; i++)); do
+    [[ "${args[i]}" == "--" ]] && sep="$i"
+  done
+  [[ "$sep" -ge 0 ]] || return 1
+  for ((i = 0; i < sep; i++)); do
+    words+=("${args[i]}")
   done
 
   COMP_WORDS=("${words[@]}")
-  COMP_CWORD="$cword"
+  COMP_CWORD="${args[sep + 1]}"
   _set_comp_line
+  COMPREPLY=()
+  _claude_bash_completion
+}
+
+# Helper: simulate completion from a literal command line, with the cursor at
+# its end. Splits the line into COMP_WORDS the way bash does, so that a word
+# carrying a colon arrives in the fragments a real shell would hand over.
+# Usage: _simulate_line "claude -r dev:cleanbot:"
+_simulate_line() {
+  local line="$1" field head
+  local -a fields
+  read -r -a fields <<< "$line"
+  COMP_WORDS=()
+  for field in "${fields[@]}"; do
+    while [[ "$field" == *:* ]]; do
+      head="${field%%:*}"
+      [[ -n "$head" ]] && COMP_WORDS+=("$head")
+      COMP_WORDS+=(":")
+      field="${field#*:}"
+    done
+    [[ -n "$field" ]] && COMP_WORDS+=("$field")
+  done
+  [[ "$line" == *" " ]] && COMP_WORDS+=("")
+  COMP_CWORD=$((${#COMP_WORDS[@]} - 1))
+  COMP_LINE="$line"
+  COMP_POINT="${#line}"
   COMPREPLY=()
   _claude_bash_completion
 }
@@ -53,13 +76,40 @@ setup() {
   source "$BATS_TEST_DIRNAME/../claude-completion.bash"
 }
 
-# --- prev variable ---
+# --- colon-separated words ---
 
-@test "prev variable is defined inside completion function" {
-  # Verify that the function source contains prev assignment
-  local fn_body
-  fn_body=$(declare -f _claude_bash_completion)
-  [[ "$fn_body" == *'prev="${COMP_WORDS[COMP_CWORD-1]}"'* ]]
+@test "a flag is still recognized past a colon in its value" {
+  _simulate_line "claude --permission-mode a:"
+  [[ "${#COMPREPLY[@]}" -eq 0 ]]
+  _simulate_line "claude --permission-mode "
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" plan "* ]]
+}
+
+@test "a colon in the value does not split the word being matched" {
+  _simulate_line "claude --tools Web"
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" WebFetch "* ]]
+  [[ "$joined" == *" WebSearch "* ]]
+}
+
+@test "candidates are trimmed to what bash will replace" {
+  _simulate_line "claude --permission-mode "
+  local before=" ${COMPREPLY[*]} "
+  [[ "$before" == *" acceptEdits "* ]]
+  COMP_WORDBREAKS=":"
+  COMPREPLY=(a:b:c a:b:d)
+  _claude_ltrim_colon "a:b:"
+  [[ "${COMPREPLY[0]}" == "c" ]]
+  [[ "${COMPREPLY[1]}" == "d" ]]
+}
+
+@test "candidates are left alone when nothing was typed before a colon" {
+  COMP_WORDBREAKS=":"
+  COMPREPLY=(alpha beta)
+  _claude_ltrim_colon "al"
+  [[ "${COMPREPLY[0]}" == "alpha" ]]
+  [[ "${COMPREPLY[1]}" == "beta" ]]
 }
 
 # --- flag value completions ---
@@ -187,13 +237,7 @@ setup() {
 }
 
 @test "/code-review with -- completes both --comment and --fix" {
-  # Set arrays directly: _simulate_completion treats "--" as its own
-  # word/cword separator, so a literal "--" word cannot pass through it.
-  COMP_WORDS=(claude /code-review --)
-  COMP_CWORD=2
-  _set_comp_line
-  COMPREPLY=()
-  _claude_bash_completion
+  _simulate_completion "claude" "/code-review" "--" -- 2
   [[ "${#COMPREPLY[@]}" -eq 2 ]]
   local joined="${COMPREPLY[*]}"
   [[ "$joined" == *"--comment"* ]]

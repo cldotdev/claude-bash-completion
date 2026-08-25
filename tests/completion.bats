@@ -836,6 +836,25 @@ _make_sessions() {
   [[ "$reg" == *"-o default"* ]]
 }
 
+# --- opening quotes ---
+
+@test "slash commands complete inside an opening single quote" {
+  _simulate_completion "claude" "'/hel" -- 1
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "/help" ]]
+}
+
+@test "slash commands complete inside an opening double quote" {
+  _simulate_completion "claude" '"/hel' -- 1
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "/help" ]]
+}
+
+@test "an opening quote is dropped only ahead of a slash command" {
+  _simulate_completion "claude" "'--mod" -- 1
+  [[ "${#COMPREPLY[@]}" -eq 0 ]]
+}
+
 # --- sourcing ---
 
 @test "sourcing the script defines no claude function" {

@@ -293,6 +293,13 @@ _claude_bash_completion()
     prev="${COMP_WORDS[COMP_CWORD-1]}"
   fi
 
+  # Completion can start inside an opening quote, which bash keeps in the
+  # current word. Slash command names hold nothing that needs quoting, so
+  # dropping that quote is all it takes for them to match.
+  case "$cur" in
+    [\'\"]/*) cur="${cur:1}" ;;
+  esac
+
   # A flag whose value is optional, followed by a word starting with a dash,
   # means the user moved on to the next flag rather than typing the value.
   case "$prev" in

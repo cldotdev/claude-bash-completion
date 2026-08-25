@@ -10,6 +10,7 @@ Bash completion script for the Claude Code CLI, providing tab completion for bui
 - Auto-completion for built-in tool names on `--tools`, `--allowedTools`, and `--disallowedTools`
 - Auto-completion for recorded session IDs on `--resume` and `-r`, most recent first
 - Auto-completion for custom commands and skills from personal and project directories
+- Slash command completion reaches inside an opening quote, which is where a command that carries arguments has to be typed
 - Filesystem fallback when no programmatic completion matches
 
 > Command, flag, and subcommand counts reflect Claude Code v2.1.241. The lists cover what a default account can actually run, including command aliases and entries that `claude --help` hides, such as `claude attach`. Commands that a feature flag leaves switched off are excluded, so completion never offers anything the CLI will refuse.
@@ -60,6 +61,7 @@ Once installed, you can use tab completion with the `claude` command:
 # Slash commands
 claude /         # Shows all available slash commands
 claude /con      # Completes to /config, /context, /cost, etc.
+claude '/con     # Completes inside an opening quote as well
 
 # CLI flags
 claude --        # Shows all long flags
@@ -98,6 +100,8 @@ The CLI reads the prompt as a single argument and silently drops any positional 
 claude "/format some text"      # arrives as one prompt
 claude /format some text        # only /format arrives; the rest is discarded
 ```
+
+Completion reaches inside an opening quote, so `claude '/for` plus Tab fills in the command name. Bash closes the quote itself and leaves the cursor past it, so move back inside the quote before typing the arguments.
 
 ## How It Works
 

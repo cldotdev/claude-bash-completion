@@ -25,8 +25,8 @@ How to update the `_CLAUDE_BUILTIN_COMMANDS`, `_CLAUDE_FLAGS`, and `_CLAUDE_SUBC
 ### Verify
 
 - `shellcheck claude-completion.bash` -- no warnings.
-- `bats tests/` -- all tests pass.
-- Command count matches the comment: `sed -n '/_CLAUDE_BUILTIN_COMMANDS=(/,/)/p' claude-completion.bash | grep -oP '/[a-z][-a-z]*' | wc -l`
+- `bats tests/` -- all tests pass. Run it again with `BASH_COMPLETION_LIB` pointed at an installed `bash_completion`, and a third time with `BASH_COMPLETION_DROP_DEPRECATED=1` alongside it, to cover the package path and the post-2.12 interface. CI runs all three.
+- Command count matches the comment: `sed -n '/_CLAUDE_BUILTIN_COMMANDS=(/,/)/p' claude-completion.bash | grep -oE '/[a-z][-a-z]*' | wc -l`
 - Source the script and confirm `complete -p claude` registers the function.
 
 ### Notes

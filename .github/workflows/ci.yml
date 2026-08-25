@@ -1,0 +1,109 @@
+---
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Covers the fallback path, where the package is absent.
+          - name: Ubuntu, no bash-completion
+            os: ubuntu-latest
+            bash_completion: false
+          # Ships bash-completion 2.11, whose _init_completion is native.
+          - name: Ubuntu, bash-completion
+            os: ubuntu-latest
+            bash_completion: true
+          # Ships bash-completion 2.16, where _init_completion survives only
+          # in a compat file and _comp_initialize is the real entry point.
+          - name: Debian 13, bash-completion
+            os: ubuntu-latest
+            container: debian:13
+            bash_completion: true
+          # Same, minus the compat file, so nothing can quietly depend on the
+          # pre-2.12 names.
+          - name: Debian 13, deprecated names dropped
+            os: ubuntu-latest
+            container: debian:13
+            bash_completion: true
+            drop_deprecated: true
+          - name: macOS, bash-completion
+            os: macos-latest
+            bash_completion: true
+    steps:
+      # Runs before checkout so the container has git for it.
+      - name: Install packages (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo=""
+          command -v sudo >/dev/null && sudo=sudo
+          $sudo apt-get update
+          packages="bats git ca-certificates"
+          if [ "${{ matrix.bash_completion }}" = true ]; then
+            packages="$packages bash-completion"
+          fi
+          $sudo apt-get install -y $packages
+
+      - name: Install packages (macOS)
+        if: runner.os == 'macOS'
+        run: brew install bash bats-core bash-completion@2
+
+      - uses: actions/checkout@v5
+
+      # The system Bash on macOS is 3.2, which lacks mapfile.
+      - name: Prefer the Homebrew Bash
+        if: runner.os == 'macOS'
+        run: echo "$(brew --prefix)/bin" >> "$GITHUB_PATH"
+
+      - name: Point the suite at bash-completion
+        if: matrix.bash_completion
+        run: |
+          if [ "$RUNNER_OS" = macOS ]; then
+            lib="$(brew --prefix)/share/bash-completion/bash_completion"
+          else
+            lib=/usr/share/bash-completion/bash_completion
+          fi
+          test -r "$lib"
+          echo "BASH_COMPLETION_LIB=$lib" >> "$GITHUB_ENV"
+
+      - name: Drop the pre-2.12 names
+        if: matrix.drop_deprecated
+        run: echo "BASH_COMPLETION_DROP_DEPRECATED=1" >> "$GITHUB_ENV"
+
+      - name: Report versions
+        run: |
+          bash --version | head -1
+          if [ -n "${BASH_COMPLETION_LIB:-}" ]; then
+            bash -c '. "$BASH_COMPLETION_LIB"
+              IFS=.
+              echo "bash-completion ${BASH_COMPLETION_VERSINFO[*]}"'
+          else
+            echo "bash-completion not loaded"
+          fi
+
+      - name: Run the test suite
+        run: bats tests/
+
+  lint:
+    name: shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # shellcheck comes with the Ubuntu runner image.
+      - name: Lint the completion script
+        run: |
+          shellcheck --version | head -2
+          shellcheck claude-completion.bash

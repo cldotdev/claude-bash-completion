@@ -177,6 +177,17 @@ bats tests/
 shellcheck claude-completion.bash
 ```
 
+The script reaches the package through three different routes, so the suite runs three ways. Leaving `BASH_COMPLETION_LIB` unset covers the fallback for a machine with no package at all; setting it loads the package first; adding `BASH_COMPLETION_DROP_DEPRECATED` removes the pre-2.12 aliases that a compat file restores, which is the only way to reach the current interface on a distribution that ships that file:
+
+```bash
+bats tests/
+BASH_COMPLETION_LIB=/usr/share/bash-completion/bash_completion bats tests/
+BASH_COMPLETION_LIB=/usr/share/bash-completion/bash_completion \
+  BASH_COMPLETION_DROP_DEPRECATED=1 bats tests/
+```
+
+Which route the second command takes depends on the package version, so CI covers both: Ubuntu ships bash-completion 2.11 and lands on `_init_completion`, Debian 13 ships 2.16 and lands on `_comp_initialize`. macOS runs against the Homebrew Bash with the package loaded.
+
 The built-in command, flag, and subcommand lists are aligned with each Claude Code release. See [CLAUDE.md](CLAUDE.md) for the alignment procedure.
 
 ## License

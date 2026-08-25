@@ -249,10 +249,14 @@ _claude_find_word() {
   return 1
 }
 
-# Complete paths through bash-completion's _filedir, which escapes spaces and
-# other metacharacters, falling back to compgen where it is not loaded.
+# Complete paths through bash-completion, which escapes spaces and other
+# metacharacters, falling back to compgen where it is not loaded. Version 2.12
+# renamed _filedir; the old name survives only in a compat file that a
+# distribution may or may not ship, so reach for the current name first.
 _claude_filedir() {
-  if declare -F _filedir >/dev/null; then
+  if declare -F _comp_compgen >/dev/null; then
+    _comp_compgen -a filedir "$@"
+  elif declare -F _filedir >/dev/null; then
     _filedir "$@"
   elif [[ "${1-}" == "-d" ]]; then
     mapfile -t COMPREPLY < <(compgen -d -- "${COMP_WORDS[COMP_CWORD]}")
@@ -287,9 +291,13 @@ _claude_bash_completion()
 {
   local cur prev words cword
   COMPREPLY=()
-  if declare -F _init_completion >/dev/null; then
+  if declare -F _comp_initialize >/dev/null; then
     # bash-completion's parser understands quoting and redirections; the raw
-    # arrays stand in where the package is not installed.
+    # arrays stand in where the package is not installed. _comp_initialize is
+    # the 2.12 name for _init_completion, which now lives in a compat file
+    # that not every distribution ships.
+    _comp_initialize || return 0
+  elif declare -F _init_completion >/dev/null; then
     _init_completion || return 0
   else
     words=("${COMP_WORDS[@]}")

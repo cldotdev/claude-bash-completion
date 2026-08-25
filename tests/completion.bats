@@ -38,11 +38,17 @@ _set_comp_line() {
 }
 
 # BASH_COMPLETION_LIB points at an installed bash_completion to exercise the
-# package path; leaving it unset covers the fallback path instead.
+# package path; leaving it unset covers the fallback path instead. Setting
+# BASH_COMPLETION_DROP_DEPRECATED drops the pre-2.12 aliases that a compat
+# file restores, which is the only way to reach the current interface on a
+# distribution that ships that file.
 setup() {
   if [[ -n "${BASH_COMPLETION_LIB:-}" ]]; then
     # shellcheck disable=SC1090
     source "$BASH_COMPLETION_LIB"
+    if [[ -n "${BASH_COMPLETION_DROP_DEPRECATED:-}" ]]; then
+      unset -f _init_completion _filedir
+    fi
   fi
   source "$BATS_TEST_DIRNAME/../claude-completion.bash"
 }

@@ -17,38 +17,74 @@ Bash completion script for the Claude Code CLI, providing tab completion for bui
 
 ## Requirements
 
-- Bash shell
+- Bash 4.0 or newer, because completion results are collected with `mapfile`. Bash 4.4 adds `compopt -o nosort`, which keeps session IDs in most-recent-first order; older shells sort them alphabetically instead.
 - [Claude Code](https://github.com/anthropics/claude-code) installed and configured
-- `bash-completion` package (usually pre-installed on most systems)
+- `bash-completion` 2.0 or newer for [Method 1](#method-1-user-completion-directory-recommended) and [Method 2](#method-2-system-completion-directory), which both rely on its on-demand loading. [Method 3](#method-3-source-in-bashrc) needs no package.
+- `git`, to discover project-level commands and skills. Everything else works without it.
+
+macOS ships Bash 3.2, which is too old for the script and for bash-completion 2.x. Install current versions from Homebrew, and make sure the shell you run is the one Homebrew installed:
+
+```bash
+brew install bash bash-completion@2
+```
+
+To check a shell:
+
+```bash
+bash --version | head -1               # 4.0 or newer
+echo "${BASH_COMPLETION_VERSINFO[@]}"  # empty means bash-completion is not loaded
+complete -p claude                     # confirms registration after installing
+```
 
 ## Installation
 
-### Method 1: Source in `.bashrc`
-
-1. Clone or download this repository:
+Clone the repository first:
 
 ```bash
 git clone https://github.com/cldotdev/claude-bash-completion.git
 ```
 
-2. Add the following line to your `~/.bashrc`:
+For Methods 1 and 2, the installed file must be named `claude`: bash-completion loads a completion file on demand by matching its name against the command being completed.
+
+### Method 1: User Completion Directory (Recommended)
+
+No root access needed, and the same path works on Linux and macOS:
 
 ```bash
-source /path/to/claude-bash-completion/claude-completion.bash
+dir="${BASH_COMPLETION_USER_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/bash-completion}/completions"
+mkdir -p "$dir"
+cp claude-completion.bash "$dir/claude"
 ```
 
-3. Reload your shell configuration:
+bash-completion searches this directory before any other, so the script loads the first time you press Tab after `claude`, and costs nothing in shells where that never happens.
+
+### Method 2: System Completion Directory
+
+For every user on the machine:
 
 ```bash
-source ~/.bashrc
+# Linux
+sudo mkdir -p /usr/local/share/bash-completion/completions
+sudo cp claude-completion.bash /usr/local/share/bash-completion/completions/claude
+
+# macOS (Homebrew)
+cp claude-completion.bash "$(brew --prefix)/share/bash-completion/completions/claude"
 ```
 
-### Method 2: Install to system completion directory
-
-Copy the script to your system's bash completion directory:
+When packaging for a distribution rather than installing by hand, ask bash-completion where its completions belong instead of hardcoding a path:
 
 ```bash
-sudo cp claude-completion.bash /etc/bash_completion.d/claude
+pkg-config --variable=completionsdir bash-completion
+```
+
+`/etc/bash_completion.d/` works too, but it is a compatibility directory: every file in it is read at shell startup, whether or not you ever run `claude`. Remove any older copy you left there before installing elsewhere. A copy in that directory registers the completion at startup, which stops the on-demand loader from ever reaching the newer file.
+
+### Method 3: Source in `.bashrc`
+
+This is the only method that needs no `bash-completion` package, because it does not go through on-demand loading:
+
+```bash
+echo 'source /path/to/claude-bash-completion/claude-completion.bash' >> ~/.bashrc
 ```
 
 Then reload your shell or start a new terminal session.
@@ -123,6 +159,8 @@ The script automatically discovers custom slash commands and skills from these l
 Subdirectory structures are converted to colon-separated names (e.g., `commands/dev/rails.md` or `skills/dev/rails/SKILL.md` becomes `/dev:rails`).
 
 Project root is detected via `git rev-parse --show-toplevel`. Project-level discovery is skipped when not inside a git repository.
+
+Commands and skills that arrive through a plugin are left out. Whether one of them is active in the current directory depends on the plugin's install scope and on the `enabledPlugins` settings that apply there, and completion has no dependable way to reproduce that decision. Offering a command the CLI would refuse is worse than offering nothing, so plugin entries stay out until the state can be read reliably.
 
 ## Session IDs
 

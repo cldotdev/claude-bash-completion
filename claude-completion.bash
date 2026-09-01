@@ -47,7 +47,7 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (125 commands as of v2.1.241)
+# Built-in slash commands (130 commands as of v2.1.252)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /allowed-tools /android /app
   /artifact-capabilities /artifact-design /artifact-diagramming /artifacts
@@ -66,16 +66,17 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /marketplace /mcp /memory /mobile /model /name /new
   /passes /permissions /plan /plugin /plugins /powerup
   /privacy-settings /proactive /quit
-  /rc /recap /release-notes /reload-plugins /reload-skills /remote-control
+  /radio /rc /recap /release-notes /reload-plugins /reload-skills /remote-control
   /remote-env /rename /reset /resume /review /rewind /routines /run /run-skill-generator
-  /sandbox /schedule /scroll-speed /security-review /settings /share
+  /sandbox /schedule /scroll-speed /security-review /settings
+  /setup-bedrock /setup-vertex /share
   /simplify /skills /stats /status /statusline /stickers /subtask
   /tasks /team-onboarding /teleport /terminal-setup /theme /tp /tui
   /ultrareview /undo /update-config /upgrade /usage /usage-credits
-  /verify /voice /workflows
+  /verify /voice /web-setup /workflow-authoring /workflows
 )
 
-# CLI flags (75 flags as of v2.1.241)
+# CLI flags (76 flags as of v2.1.252)
 _CLAUDE_FLAGS=(
   --add-dir
   --agent --agents
@@ -104,6 +105,7 @@ _CLAUDE_FLAGS=(
   --permission-mode --plugin-dir --plugin-url
   -p --print --prompt-suggestions
   --remote-control --remote-control-session-name-prefix --replay-user-messages
+  --restricted
   -r --resume
   --safe-mode
   --session-id --setting-sources --settings --strict-mcp-config
@@ -114,7 +116,7 @@ _CLAUDE_FLAGS=(
   -w --worktree
 )
 
-# CLI subcommands (24 subcommands as of v2.1.241)
+# CLI subcommands (24 subcommands as of v2.1.252)
 _CLAUDE_SUBCOMMANDS=(
   agents attach auth auto-mode daemon doctor gateway import install
   logs mcp plugin plugins project rc remote-control respawn rm
@@ -164,7 +166,7 @@ _CLAUDE_VARIADIC_FLAGS=(
 # Built-in tool names accepted by --tools, --allowedTools, and --disallowedTools.
 # `claude --help` carries no listing and the CLI accepts unknown names without
 # complaint, so this mirrors the built-in section of the tool ordering table in
-# the v2.1.241 binary. MCP and self-hosted-runner tools are left out: those
+# the v2.1.252 binary. MCP and self-hosted-runner tools are left out: those
 # names come from a connected server, not from the build. "default" comes from
 # the --tools help text.
 _CLAUDE_TOOL_NAMES=(
@@ -615,7 +617,7 @@ _claude_complete()
     fi
     case "$cmd" in
       agents)
-        _claude_reply_subcommand "$cur" "--add-dir --agent --all --allow-dangerously-skip-permissions --cwd --dangerously-skip-permissions --effort --json --mcp-config --model --permission-mode --plugin-dir --setting-sources --settings --strict-mcp-config -h --help"
+        _claude_reply_subcommand "$cur" "--add-dir --agent --all --allow-dangerously-skip-permissions --cwd --dangerously-skip-permissions --effort --json --mcp-config --model --permission-mode --plugin-dir --restricted --setting-sources --settings --strict-mcp-config -h --help"
         return 0
         ;;
       attach|logs|rm|stop)
@@ -697,6 +699,10 @@ _claude_complete()
             mapfile -t COMPREPLY < <(compgen -W "$scopes" -- "$cur")
             return 0
             ;;
+          --mocks)
+            mapfile -t COMPREPLY < <(compgen -W "record off" -- "$cur")
+            return 0
+            ;;
         esac
         if [[ "$sub" == "marketplace" || "$sub" == "eval" ]]; then
           _claude_find_word $((sub_idx + 1)) "${words[@]:0:cword}" && nested="$_claude_word"
@@ -715,7 +721,7 @@ _claude_complete()
             if [[ "$nested" == "init" ]]; then
               _claude_reply_subcommand "$cur" "--bare --eval-dir -i --interactive -h --help"
             else
-              _claude_reply_subcommand "$cur" "--ablation --allow-tools --case --eval-dir --json --judge-model --keep-temp --max-cost-usd --model --no-publish --no-scaffold --output-dir --publish-report --report --runs --scaffold --tag --threshold --verbose -h --help" "init"
+              _claude_reply_subcommand "$cur" "--ablation --allow-tools --case --eval-dir --json --judge-model --keep-temp --max-cost-usd --mocks --model --no-publish --no-scaffold --output-dir --publish-report --report --runs --scaffold --tag --threshold --verbose -h --help" "init"
             fi
             ;;
           init|new) _claude_reply_subcommand "$cur" "--author --author-email --description -f --force --with -h --help" "" ;;
@@ -755,7 +761,7 @@ _claude_complete()
         return 0
         ;;
       self-hosted-runner)
-        _claude_reply_subcommand "$cur" "--api-url --base-dir --capacity --configure-git --confine-repo-settings --debug-token-dir --defer-shutdown-max-min --drain-grace-sec --drain-wait-sec --environment-secret-file --exec-path --exit-if-unused-min --git-host-rewrite --git-ssh-rewrite --health-port --hooks-dir --kill-session-after-min --lock-to-account --log-file --log-level --post-session-hook-timeout-sec --proxy-authorization-command --proxy-authorization-file --push-outcome-on-release --release-idle-session-min --retire-at --session-stop-grace-sec --startup-timeout-min --trust-workspace --use-anthropic-git-proxy -h --help"
+        _claude_reply_subcommand "$cur" "--api-url --base-dir --capacity --client-label --configure-git --confine-repo-settings --debug-token-dir --defer-shutdown-max-min --drain-grace-sec --drain-wait-sec --environment-secret-file --exec-path --exit-if-unused-min --git-host-rewrite --git-ssh-rewrite --health-port --hooks-dir --kill-session-after-min --lock-to-account --log-file --log-level --post-session-hook-timeout-sec --proxy-authorization-command --proxy-authorization-file --push-outcome-on-release --release-idle-session-min --retire-at --session-stop-grace-sec --startup-timeout-min --trust-workspace --use-anthropic-git-proxy -h --help"
         return 0
         ;;
       ultrareview)

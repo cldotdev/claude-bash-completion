@@ -344,8 +344,8 @@ setup() {
   [[ "$joined" != *"/help"* ]]
 }
 
-@test "_CLAUDE_BUILTIN_COMMANDS array has 125 entries" {
-  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 125 ]]
+@test "_CLAUDE_BUILTIN_COMMANDS array has 130 entries" {
+  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 130 ]]
 }
 
 @test "/artifact-diagramming is in builtin commands" {
@@ -455,8 +455,24 @@ setup() {
 
 @test "commands behind a disabled feature flag are not in builtin commands" {
   local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
-  [[ "$joined" != *" /radio "* ]]
-  [[ "$joined" != *" /web-setup "* ]]
+  [[ "$joined" != *" /import "* ]]
+}
+
+@test "/radio is in builtin commands" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" == *" /radio "* ]]
+}
+
+@test "commands gated by account or provider are in builtin commands" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" == *" /setup-bedrock "* ]]
+  [[ "$joined" == *" /setup-vertex "* ]]
+  [[ "$joined" == *" /web-setup "* ]]
+}
+
+@test "/workflow-authoring is in builtin commands" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" == *" /workflow-authoring "* ]]
 }
 
 @test "/teleport is in builtin commands" {
@@ -518,6 +534,11 @@ setup() {
   [[ "$joined" == *"--plugin-url"* ]]
 }
 
+@test "--restricted is in flags" {
+  local joined=" ${_CLAUDE_FLAGS[*]} "
+  [[ "$joined" == *" --restricted "* ]]
+}
+
 @test "--forward-subagent-text is in flags" {
   local joined="${_CLAUDE_FLAGS[*]}"
   [[ "$joined" == *"--forward-subagent-text"* ]]
@@ -562,8 +583,8 @@ setup() {
   [[ "$joined" == *"1m"* ]]
 }
 
-@test "_CLAUDE_FLAGS array has 75 entries" {
-  [[ "${#_CLAUDE_FLAGS[@]}" -eq 75 ]]
+@test "_CLAUDE_FLAGS array has 76 entries" {
+  [[ "${#_CLAUDE_FLAGS[@]}" -eq 76 ]]
 }
 
 # --- subcommand completions ---
@@ -718,6 +739,17 @@ setup() {
   _simulate_completion "claude" "plugin" "eval" "--ev" -- 3
   [[ "${#COMPREPLY[@]}" -eq 1 ]]
   [[ "${COMPREPLY[0]}" == "--eval-dir" ]]
+  _simulate_completion "claude" "plugin" "eval" "--moc" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--mocks" ]]
+}
+
+@test "claude plugin eval --mocks completes with mock modes" {
+  _simulate_completion "claude" "plugin" "eval" "--mocks" "" -- 4
+  [[ "${#COMPREPLY[@]}" -eq 2 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" record "* ]]
+  [[ "$joined" == *" off "* ]]
 }
 
 @test "claude auth completes with its sub-subcommands" {
@@ -790,6 +822,12 @@ setup() {
   [[ "$joined" == *" session "* ]]
 }
 
+@test "claude agents completes with its own flags" {
+  _simulate_completion "claude" "agents" "--res" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--restricted" ]]
+}
+
 @test "claude self-hosted-runner completes with its own flags" {
   _simulate_completion "claude" "self-hosted-runner" "--proxy-" -- 2
   [[ "${#COMPREPLY[@]}" -eq 2 ]]
@@ -799,6 +837,9 @@ setup() {
   _simulate_completion "claude" "self-hosted-runner" "--defer" -- 2
   [[ "${#COMPREPLY[@]}" -eq 1 ]]
   [[ "${COMPREPLY[0]}" == "--defer-shutdown-max-min" ]]
+  _simulate_completion "claude" "self-hosted-runner" "--cl" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--client-label" ]]
 }
 
 @test "subcommand flags replace the global flag list" {

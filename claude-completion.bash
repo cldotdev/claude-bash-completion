@@ -47,24 +47,24 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (130 commands as of v2.1.252)
+# Built-in slash commands (130 commands as of v2.1.258)
 _CLAUDE_BUILTIN_COMMANDS=(
-  /add-dir /advisor /allowed-tools /android /app
+  /add-dir /advisor /allowed-tools /android
   /artifact-capabilities /artifact-design /artifact-diagramming /artifacts
   /autocompact /autofix-pr
   /background /bashes /batch /bg /branch /brief /btw /bug
   /cd /checkpoint /checkup /chrome /claude-api /claude-in-chrome /clear /code-review /color
   /compact /config /context /continue /copy /cost
-  /dataviz /debug /deep-research /design /design-login /design-sync /desktop /diff /doctor
+  /dataviz /debug /deep-research /design /design-login /design-sync /diff /doctor
   /effort /exit /export
   /fast /feedback /fewer-permission-prompts /focus /fork
   /goal
   /help /hooks
   /ide /init /insights /install-github-app /install-slack-app /ios
   /keybindings /keybindings-help
-  /login /logout /loop
+  /list-agents /login /logout /loop
   /marketplace /mcp /memory /mobile /model /name /new
-  /passes /permissions /plan /plugin /plugins /powerup
+  /passes /peers /permissions /plan /plugin /plugins /powerup
   /privacy-settings /proactive /quit
   /radio /rc /recap /release-notes /reload-plugins /reload-skills /remote-control
   /remote-env /rename /reset /resume /review /rewind /routines /run /run-skill-generator
@@ -76,7 +76,7 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /verify /voice /web-setup /workflow-authoring /workflows
 )
 
-# CLI flags (76 flags as of v2.1.252)
+# CLI flags (77 flags as of v2.1.258)
 _CLAUDE_FLAGS=(
   --add-dir
   --agent --agents
@@ -109,14 +109,14 @@ _CLAUDE_FLAGS=(
   -r --resume
   --safe-mode
   --session-id --setting-sources --settings --strict-mcp-config
-  --system-prompt --system-prompt-file
+  --system-prompt --system-prompt-file --system-prompt-snapshot
   --teleport --tmux --tools
   --verbose
   -v --version
   -w --worktree
 )
 
-# CLI subcommands (24 subcommands as of v2.1.252)
+# CLI subcommands (24 subcommands as of v2.1.258)
 _CLAUDE_SUBCOMMANDS=(
   agents attach auth auto-mode daemon doctor gateway import install
   logs mcp plugin plugins project rc remote-control respawn rm
@@ -152,7 +152,8 @@ _CLAUDE_VALUE_FLAGS=(
   -n --name --output-format --permission-mode --plugin-dir --plugin-url
   --prompt-suggestions --remote-control --remote-control-session-name-prefix
   -r --resume --session-id --setting-sources --settings
-  --system-prompt --system-prompt-file --teleport --tmux --tools
+  --system-prompt --system-prompt-file --system-prompt-snapshot --teleport
+  --tmux --tools
   -w --worktree
 )
 
@@ -166,7 +167,7 @@ _CLAUDE_VARIADIC_FLAGS=(
 # Built-in tool names accepted by --tools, --allowedTools, and --disallowedTools.
 # `claude --help` carries no listing and the CLI accepts unknown names without
 # complaint, so this mirrors the built-in section of the tool ordering table in
-# the v2.1.252 binary. MCP and self-hosted-runner tools are left out: those
+# the v2.1.258 binary. MCP and self-hosted-runner tools are left out: those
 # names come from a connected server, not from the build. "default" comes from
 # the --tools help text.
 _CLAUDE_TOOL_NAMES=(
@@ -508,7 +509,7 @@ _claude_complete()
   # Flag and slash command argument value completions
   case "$value_flag" in
     --model|--fallback-model|--judge-model|/model)
-      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku fable sonnet[1m] opus[1m] fable[1m] opusplan claude-fable-5 claude-fable-5[1m] claude-opus-5 claude-opus-5[1m] claude-sonnet-5 claude-sonnet-5[1m] claude-opus-4-8 claude-opus-4-8[1m] claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
+      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku fable sonnet[1m] opus[1m] fable[1m] opusplan claude-fable-5-1 claude-fable-5-1[1m] claude-fable-5 claude-fable-5[1m] claude-opus-5 claude-opus-5[1m] claude-sonnet-5 claude-sonnet-5[1m] claude-opus-4-8 claude-opus-4-8[1m] claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
       return 0
       ;;
     --output-format)
@@ -525,6 +526,10 @@ _claude_complete()
       ;;
     --prompt-suggestions)
       mapfile -t COMPREPLY < <(compgen -W "true false yes no on off 1 0" -- "$cur")
+      return 0
+      ;;
+    --system-prompt-snapshot)
+      mapfile -t COMPREPLY < <(compgen -W "on off" -- "$cur")
       return 0
       ;;
     --effort)

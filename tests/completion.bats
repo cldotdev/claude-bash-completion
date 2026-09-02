@@ -124,10 +124,17 @@ setup() {
   [[ "$joined" == *"default"* ]]
 }
 
+@test "--model completes with claude-fable-5-1 and its 1M variant" {
+  _simulate_completion "claude" "--model" "" -- 2
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" claude-fable-5-1 "* ]]
+  [[ "$joined" == *" claude-fable-5-1[1m] "* ]]
+}
+
 @test "--model completes with claude-fable-5" {
   _simulate_completion "claude" "--model" "" -- 2
-  local joined="${COMPREPLY[*]}"
-  [[ "$joined" == *"claude-fable-5"* ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" claude-fable-5 "* ]]
 }
 
 @test "--model completes with claude-sonnet-5" {
@@ -458,9 +465,21 @@ setup() {
   [[ "$joined" != *" /import "* ]]
 }
 
+@test "/desktop and its /app alias are not in builtin commands" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" != *" /desktop "* ]]
+  [[ "$joined" != *" /app "* ]]
+}
+
 @test "/radio is in builtin commands" {
   local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
   [[ "$joined" == *" /radio "* ]]
+}
+
+@test "/list-agents and its /peers alias are in builtin commands" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" == *" /list-agents "* ]]
+  [[ "$joined" == *" /peers "* ]]
 }
 
 @test "commands gated by account or provider are in builtin commands" {
@@ -562,6 +581,24 @@ setup() {
   [[ "$joined" == *"false"* ]]
 }
 
+@test "--system-prompt-snapshot is in flags" {
+  local joined=" ${_CLAUDE_FLAGS[*]} "
+  [[ "$joined" == *" --system-prompt-snapshot "* ]]
+}
+
+@test "--system-prompt-snapshot completes with on and off" {
+  _simulate_completion "claude" "--system-prompt-snapshot" "" -- 2
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" on "* ]]
+  [[ "$joined" == *" off "* ]]
+}
+
+@test "subcommand is found past --system-prompt-snapshot and its value" {
+  _simulate_completion "claude" "--system-prompt-snapshot" "on" "mc" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "mcp" ]]
+}
+
 @test "--teleport is in flags" {
   local joined=" ${_CLAUDE_FLAGS[*]} "
   [[ "$joined" == *" --teleport "* ]]
@@ -583,8 +620,8 @@ setup() {
   [[ "$joined" == *"1m"* ]]
 }
 
-@test "_CLAUDE_FLAGS array has 76 entries" {
-  [[ "${#_CLAUDE_FLAGS[@]}" -eq 76 ]]
+@test "_CLAUDE_FLAGS array has 77 entries" {
+  [[ "${#_CLAUDE_FLAGS[@]}" -eq 77 ]]
 }
 
 # --- subcommand completions ---

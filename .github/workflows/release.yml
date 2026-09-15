@@ -22,10 +22,14 @@ jobs:
       # leaving a lightweight tag that carries no annotation. --notes-from-tag
       # reads the local tag and falls back to the commit message when the
       # annotation is missing, so the release notes depend on this fetch.
+      # --title keeps the release named after the tag alone: left unset,
+      # GitHub titles it with the tag and the annotation's first line, which
+      # the notes already open with.
       - name: Create the GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git fetch --force origin \
             "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
-          gh release create "$GITHUB_REF_NAME" --verify-tag --notes-from-tag
+          gh release create "$GITHUB_REF_NAME" --verify-tag \
+            --notes-from-tag --title "$GITHUB_REF_NAME"

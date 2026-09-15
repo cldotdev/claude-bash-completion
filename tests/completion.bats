@@ -351,8 +351,8 @@ setup() {
   [[ "$joined" != *"/help"* ]]
 }
 
-@test "_CLAUDE_BUILTIN_COMMANDS array has 130 entries" {
-  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 130 ]]
+@test "_CLAUDE_BUILTIN_COMMANDS array has 131 entries" {
+  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 131 ]]
 }
 
 @test "/artifact-diagramming is in builtin commands" {
@@ -373,6 +373,16 @@ setup() {
 @test "/ultraplan is no longer in builtin commands" {
   local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
   [[ "$joined" != *" /ultraplan "* ]]
+}
+
+@test "/output-style is in builtin commands" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" == *" /output-style "* ]]
+}
+
+@test "/skill-doctor is not in builtin commands" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" != *" /skill-doctor "* ]]
 }
 
 @test "/recap is in builtin commands" {
@@ -611,6 +621,25 @@ setup() {
   [[ "$joined" == *" --environment "* ]]
 }
 
+@test "--permission-prompts and --permission-prompt-tool are in flags" {
+  local joined=" ${_CLAUDE_FLAGS[*]} "
+  [[ "$joined" == *" --permission-prompts "* ]]
+  [[ "$joined" == *" --permission-prompt-tool "* ]]
+}
+
+@test "--permission-prompts completes with target values" {
+  _simulate_completion "claude" "--permission-prompts" "" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 2 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" host "* ]]
+  [[ "$joined" == *" none "* ]]
+}
+
+@test "--append-subagent-system-prompt-file is in flags" {
+  local joined=" ${_CLAUDE_FLAGS[*]} "
+  [[ "$joined" == *" --append-subagent-system-prompt-file "* ]]
+}
+
 @test "--autocompact completes with window size values" {
   _simulate_completion "claude" "--autocompact" "" -- 2
   [[ "${#COMPREPLY[@]}" -eq 5 ]]
@@ -620,8 +649,8 @@ setup() {
   [[ "$joined" == *"1m"* ]]
 }
 
-@test "_CLAUDE_FLAGS array has 77 entries" {
-  [[ "${#_CLAUDE_FLAGS[@]}" -eq 77 ]]
+@test "_CLAUDE_FLAGS array has 80 entries" {
+  [[ "${#_CLAUDE_FLAGS[@]}" -eq 80 ]]
 }
 
 # --- subcommand completions ---
@@ -766,6 +795,27 @@ setup() {
   [[ "$joined" != *" managed "* ]]
 }
 
+@test "claude plugin install completes with its own flags" {
+  _simulate_completion "claude" "plugin" "install" "--acc" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--accept-command" ]]
+  _simulate_completion "claude" "plugin" "install" "--j" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--json" ]]
+}
+
+@test "claude plugin validate completes with --json" {
+  _simulate_completion "claude" "plugin" "validate" "--j" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--json" ]]
+}
+
+@test "claude plugin marketplace add completes with --claudeai" {
+  _simulate_completion "claude" "plugin" "marketplace" "add" "--cl" -- 4
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--claudeai" ]]
+}
+
 @test "claude plugin eval init completes with its own flags" {
   _simulate_completion "claude" "plugin" "eval" "init" "--ba" -- 4
   [[ "${#COMPREPLY[@]}" -eq 1 ]]
@@ -779,6 +829,18 @@ setup() {
   _simulate_completion "claude" "plugin" "eval" "--moc" -- 3
   [[ "${#COMPREPLY[@]}" -eq 1 ]]
   [[ "${COMPREPLY[0]}" == "--mocks" ]]
+}
+
+@test "claude plugin eval completes with its reporting and trust flags" {
+  _simulate_completion "claude" "plugin" "eval" "--allow-r" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--allow-real-servers" ]]
+  _simulate_completion "claude" "plugin" "eval" "--conc" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--concurrency" ]]
+  _simulate_completion "claude" "plugin" "eval" "--trust" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--trust-plugin" ]]
 }
 
 @test "claude plugin eval --mocks completes with mock modes" {
@@ -879,6 +941,21 @@ setup() {
   [[ "${COMPREPLY[0]}" == "--client-label" ]]
 }
 
+@test "claude self-hosted-runner --host-config-snapshot completes with snapshot modes" {
+  _simulate_completion "claude" "self-hosted-runner" "--host-config-snapshot" "" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 2 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" disk "* ]]
+  [[ "$joined" == *" memory "* ]]
+}
+
+@test "deprecated self-hosted-runner flag aliases are left out" {
+  _simulate_completion "claude" "self-hosted-runner" "--pool-" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 0 ]]
+  _simulate_completion "claude" "self-hosted-runner" "--drain-wait-bg" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 0 ]]
+}
+
 @test "subcommand flags replace the global flag list" {
   _simulate_completion "claude" "ultrareview" "--t" -- 2
   [[ "${#COMPREPLY[@]}" -eq 1 ]]
@@ -915,6 +992,21 @@ setup() {
   [[ "$joined" == *" default "* ]]
 }
 
+@test "ToolSearch and the Artifact tools complete with --tools" {
+  _simulate_completion "claude" "--tools" "ToolS" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "ToolSearch" ]]
+  _simulate_completion "claude" "--tools" "Artifact" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 4 ]]
+}
+
+@test "tools the build no longer defines are not in tool names" {
+  local joined=" ${_CLAUDE_TOOL_NAMES[*]} "
+  [[ "$joined" != *" Snip "* ]]
+  [[ "$joined" != *" SubscribePR "* ]]
+  [[ "$joined" != *" Tmux "* ]]
+}
+
 @test "--allowedTools and --disallowed-tools complete with tool names" {
   _simulate_completion "claude" "--allowedTools" "Web" -- 2
   [[ "${#COMPREPLY[@]}" -eq 3 ]]
@@ -924,7 +1016,7 @@ setup() {
 
 @test "variadic flags keep completing past their first value" {
   _simulate_completion "claude" "--tools" "Bash" "Rea" -- 3
-  [[ "${#COMPREPLY[@]}" -eq 3 ]]
+  [[ "${#COMPREPLY[@]}" -eq 4 ]]
   local joined=" ${COMPREPLY[*]} "
   [[ "$joined" == *" Read "* ]]
   [[ "$joined" == *" ReadMcpResourceTool "* ]]

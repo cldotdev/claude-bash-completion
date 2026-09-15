@@ -8,7 +8,7 @@ How to update the `_CLAUDE_BUILTIN_COMMANDS`, `_CLAUDE_FLAGS`, and `_CLAUDE_SUBC
 
 - [Claude Code changelog](https://raw.githubusercontent.com/anthropics/claude-code/refs/heads/main/CHANGELOG.md)
 - TUI slash menu audit of the installed binary as a supplement; the changelog does not announce every command (the 12 commands added in the v2.1.211 alignment were found this way)
-- `claude <subcommand> --help` for the per-subcommand trees and their flags, which the changelog rarely mentions; walk every subcommand that has sub-subcommands (`auth`, `auto-mode`, `daemon`, `mcp`, `plugin`, `plugin marketplace`, `plugin eval`, `project`)
+- `claude <subcommand> --help` for the per-subcommand trees and their flags, which the changelog rarely mentions; walk every subcommand that has sub-subcommands (`auth`, `auto-mode`, `daemon`, `mcp`, `plugin`, `plugin marketplace`, `plugin eval`, `project`, `self-hosted-runner`). Some of them print the main help instead of their own when `claude` runs with no stdin attached, so run them from a script file and check that the first line names the subcommand
 - Baseline established at v2.1.92 by auditing the installed binary and cross-referencing with the changelog
 
 ### Update Steps

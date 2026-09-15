@@ -216,6 +216,7 @@ _CLAUDE_PLUGIN_CLI_SUBCOMMANDS=(
 )
 _CLAUDE_PLUGIN_CLI_MARKETPLACE_SUBCOMMANDS=(add list remove rm update)
 _CLAUDE_PROJECT_SUBCOMMANDS=(purge)
+_CLAUDE_SELF_HOSTED_RUNNER_SUBCOMMANDS=(doctor orchestrator setup)
 
 # How many of a project's transcripts are read for their titles. The live
 # title is the last record in a transcript, so every transcript opened is read
@@ -783,7 +784,11 @@ _claude_complete()
             return 0
             ;;
         esac
-        _claude_reply_subcommand "$cur" "--api-url --base-dir --capacity --client-label --configure-git --confine-repo-settings --debug-token-dir --defer-shutdown-max-min --drain-grace-sec --drain-marker-file --drain-wait-sec --environment-secret-file --exec-path --exit-if-unused-min --git-host-rewrite --git-ssh-rewrite --health-port --hooks-dir --host-config-snapshot --kill-session-after-min --lock-to-account --log-file --log-level --post-session-hook-timeout-sec --proxy-authorization-command --proxy-authorization-file --push-outcome-on-release --release-idle-session-min --remove-session-state --retire-at --session-stop-grace-sec --startup-timeout-min --trust-workspace --use-anthropic-git-proxy -h --help"
+        case "$sub" in
+          orchestrator) _claude_reply_subcommand "$cur" "--api-url --debug-dir --environment-secret-file --expected-spawn-seconds --health-port --hook-concurrency --hook-timeout --hooks-dir --log-level --min-idle --scm-connector-ca-file --scm-connector-host --scm-connector-host-rewrite --scm-connector-id --scm-connector-provider -h --help" "" ;;
+          doctor|setup) _claude_reply_subcommand "$cur" "-h --help" "" ;;
+          *) _claude_reply_subcommand "$cur" "--api-url --base-dir --capacity --client-label --configure-git --confine-repo-settings --debug-token-dir --defer-shutdown-max-min --drain-grace-sec --drain-marker-file --drain-wait-sec --environment-secret-file --exec-path --exit-if-unused-min --git-host-rewrite --git-ssh-rewrite --health-port --hooks-dir --host-config-snapshot --kill-session-after-min --lock-to-account --log-file --log-level --post-session-hook-timeout-sec --proxy-authorization-command --proxy-authorization-file --push-outcome-on-release --release-idle-session-min --remove-session-state --retire-at --session-stop-grace-sec --startup-timeout-min --trust-workspace --use-anthropic-git-proxy -h --help" "${_CLAUDE_SELF_HOSTED_RUNNER_SUBCOMMANDS[*]}" ;;
+        esac
         return 0
         ;;
       ultrareview)

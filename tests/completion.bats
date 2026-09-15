@@ -941,6 +941,23 @@ setup() {
   [[ "${COMPREPLY[0]}" == "--client-label" ]]
 }
 
+@test "claude self-hosted-runner completes with its sub-subcommands" {
+  _simulate_completion "claude" "self-hosted-runner" "" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 3 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" doctor "* ]]
+  [[ "$joined" == *" orchestrator "* ]]
+  [[ "$joined" == *" setup "* ]]
+}
+
+@test "claude self-hosted-runner orchestrator completes with its own flags" {
+  _simulate_completion "claude" "self-hosted-runner" "orchestrator" "--hook-" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 2 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" --hook-concurrency "* ]]
+  [[ "$joined" == *" --hook-timeout "* ]]
+}
+
 @test "claude self-hosted-runner --host-config-snapshot completes with snapshot modes" {
   _simulate_completion "claude" "self-hosted-runner" "--host-config-snapshot" "" -- 3
   [[ "${#COMPREPLY[@]}" -eq 2 ]]

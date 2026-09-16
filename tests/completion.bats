@@ -912,6 +912,24 @@ setup() {
   [[ "$joined" == *" --spawn "* ]]
 }
 
+@test "claude rc completes with the Chrome toggle flags" {
+  _simulate_completion "claude" "rc" "--c" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 4 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" --chrome "* ]]
+  [[ "$joined" == *" --capacity "* ]]
+  [[ "$joined" == *" --continue "* ]]
+  [[ "$joined" == *" --create-session-in-dir "* ]]
+}
+
+@test "claude rc completes with the negated Chrome flag" {
+  _simulate_completion "claude" "rc" "--no-" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 2 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" --no-chrome "* ]]
+  [[ "$joined" == *" --no-create-session-in-dir "* ]]
+}
+
 @test "claude rc --spawn completes with spawn modes" {
   _simulate_completion "claude" "rc" "--spawn" "" -- 3
   [[ "${#COMPREPLY[@]}" -eq 3 ]]

@@ -15,7 +15,7 @@ Bash completion script for the Claude Code CLI, providing tab completion for bui
 - Slash command completion reaches inside an opening quote, which is where a command that carries arguments has to be typed
 - Filesystem fallback when no programmatic completion matches
 
-> Command, flag, and subcommand counts reflect Claude Code v2.1.271. The lists cover what a default account can actually run, including command aliases and entries that `claude --help` hides, such as `claude attach`. Commands that a feature flag leaves switched off are excluded, so completion never offers anything the CLI will refuse.
+> Command, flag, and subcommand counts reflect Claude Code v2.1.273. The lists cover what a default account can actually run, including command aliases and entries that `claude --help` hides, such as `claude attach`. Commands that a feature flag leaves switched off are excluded, so completion never offers anything the CLI will refuse.
 
 ## Requirements
 

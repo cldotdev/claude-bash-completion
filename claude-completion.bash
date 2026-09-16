@@ -47,7 +47,7 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (131 commands as of v2.1.271)
+# Built-in slash commands (131 commands as of v2.1.273)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /allowed-tools /android
   /artifact-capabilities /artifact-design /artifact-diagramming /artifacts
@@ -77,7 +77,7 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /verify /voice /web-setup /workflow-authoring /workflows
 )
 
-# CLI flags (80 flags as of v2.1.271)
+# CLI flags (80 flags as of v2.1.273)
 _CLAUDE_FLAGS=(
   --add-dir
   --agent --agents
@@ -119,7 +119,7 @@ _CLAUDE_FLAGS=(
   -w --worktree
 )
 
-# CLI subcommands (24 subcommands as of v2.1.271)
+# CLI subcommands (24 subcommands as of v2.1.273)
 _CLAUDE_SUBCOMMANDS=(
   agents attach auth auto-mode daemon doctor gateway import install
   logs mcp plugin plugins project rc remote-control respawn rm
@@ -171,7 +171,7 @@ _CLAUDE_VARIADIC_FLAGS=(
 
 # Built-in tool names accepted by --tools, --allowedTools, and --disallowedTools.
 # `claude --help` carries no listing and the CLI accepts unknown names without
-# complaint, so this mirrors the name constants in the v2.1.271 binary: the
+# complaint, so this mirrors the name constants in the v2.1.273 binary: the
 # strings it defines and then passes as a tool's `name`. MCP and
 # self-hosted-runner tools are left out: those names come from a connected
 # server, not from the build. "default" comes from the --tools help text.
@@ -770,7 +770,7 @@ _claude_complete()
             return 0
             ;;
         esac
-        _claude_reply_subcommand "$cur" "--capacity -c --continue --create-session-in-dir --debug-file --name --no-create-session-in-dir --permission-mode --remote-control-session-name-prefix --session-id --spawn -v --verbose -h --help"
+        _claude_reply_subcommand "$cur" "--capacity --chrome -c --continue --create-session-in-dir --debug-file --name --no-chrome --no-create-session-in-dir --permission-mode --remote-control-session-name-prefix --session-id --spawn -v --verbose -h --help"
         return 0
         ;;
       respawn)

@@ -351,8 +351,8 @@ setup() {
   [[ "$joined" != *"/help"* ]]
 }
 
-@test "_CLAUDE_BUILTIN_COMMANDS array has 131 entries" {
-  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 131 ]]
+@test "_CLAUDE_BUILTIN_COMMANDS array has 132 entries" {
+  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 132 ]]
 }
 
 @test "/artifact-diagramming is in builtin commands" {
@@ -383,6 +383,11 @@ setup() {
 @test "/skill-doctor is not in builtin commands" {
   local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
   [[ "$joined" != *" /skill-doctor "* ]]
+}
+
+@test "/extra-usage is in builtin commands" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" == *" /extra-usage "* ]]
 }
 
 @test "/recap is in builtin commands" {

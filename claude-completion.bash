@@ -47,7 +47,7 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (131 commands as of v2.1.273)
+# Built-in slash commands (132 commands as of v2.1.273)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /allowed-tools /android
   /artifact-capabilities /artifact-design /artifact-diagramming /artifacts
@@ -56,7 +56,7 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /cd /checkpoint /checkup /chrome /claude-api /claude-in-chrome /clear /code-review /color
   /compact /config /context /continue /copy /cost
   /dataviz /debug /deep-research /design /design-login /design-sync /diff /doctor
-  /effort /exit /export
+  /effort /exit /export /extra-usage
   /fast /feedback /fewer-permission-prompts /focus /fork
   /goal
   /help /hooks

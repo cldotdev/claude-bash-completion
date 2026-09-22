@@ -150,6 +150,13 @@ setup() {
   [[ "$joined" == *" claude-opus-5[1m] "* ]]
 }
 
+@test "--model completes with claude-opus-5-5 and its 1M variant" {
+  _simulate_completion "claude" "--model" "" -- 2
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" claude-opus-5-5 "* ]]
+  [[ "$joined" == *" claude-opus-5-5[1m] "* ]]
+}
+
 @test "--model completes with fable aliases" {
   _simulate_completion "claude" "--model" "" -- 2
   local joined=" ${COMPREPLY[*]} "
@@ -807,6 +814,9 @@ setup() {
   _simulate_completion "claude" "plugin" "install" "--j" -- 3
   [[ "${#COMPREPLY[@]}" -eq 1 ]]
   [[ "${COMPREPLY[0]}" == "--json" ]]
+  _simulate_completion "claude" "plugin" "install" "--reg" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--registry" ]]
 }
 
 @test "claude plugin validate completes with --json" {
@@ -1002,6 +1012,15 @@ setup() {
   [[ "${COMPREPLY[0]}" == "--timeout" ]]
 }
 
+@test "claude rm completes with its own flags" {
+  _simulate_completion "claude" "rm" "--" -- 2
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" --discard-unpushed "* ]]
+  [[ "$joined" == *" --force-remove-worktree "* ]]
+  _simulate_completion "claude" "stop" "--d" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 0 ]]
+}
+
 @test "subcommands still complete after a global flag and its value" {
   _simulate_completion "claude" "--model" "opus" "mc" -- 3
   [[ "${#COMPREPLY[@]}" -eq 1 ]]
@@ -1045,6 +1064,8 @@ setup() {
   [[ "$joined" != *" Snip "* ]]
   [[ "$joined" != *" SubscribePR "* ]]
   [[ "$joined" != *" Tmux "* ]]
+  [[ "$joined" != *" TaskOutput "* ]]
+  [[ "$joined" != *" BashOutput "* ]]
 }
 
 @test "--allowedTools and --disallowed-tools complete with tool names" {

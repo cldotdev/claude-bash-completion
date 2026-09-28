@@ -47,7 +47,7 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (132 commands as of v2.1.280)
+# Built-in slash commands (133 commands as of v2.1.284)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /allowed-tools /android
   /artifact-capabilities /artifact-design /artifact-diagramming /artifacts
@@ -67,7 +67,7 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /output-style
   /passes /peers /permissions /plan /plugin /plugins /powerup
   /privacy-settings /proactive /quit
-  /radio /rc /recap /release-notes /reload-plugins /reload-skills /remote-control
+  /radio /rate-limit-options /rc /recap /release-notes /reload-plugins /reload-skills /remote-control
   /remote-env /rename /reset /resume /review /rewind /routines /run /run-skill-generator
   /sandbox /schedule /scroll-speed /security-review /settings
   /setup-bedrock /setup-vertex /share
@@ -77,7 +77,7 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /verify /voice /web-setup /workflow-authoring /workflows
 )
 
-# CLI flags (80 flags as of v2.1.280)
+# CLI flags (81 flags as of v2.1.284)
 _CLAUDE_FLAGS=(
   --add-dir
   --agent --agents
@@ -87,7 +87,7 @@ _CLAUDE_FLAGS=(
   --append-system-prompt --append-system-prompt-file
   --autocompact --ax-screen-reader
   --background --bare --betas --bg --brief
-  --chrome --cloud
+  --chrome --client-data-url --cloud
   -c --continue
   --dangerously-skip-permissions
   -d --debug --debug-file
@@ -119,7 +119,7 @@ _CLAUDE_FLAGS=(
   -w --worktree
 )
 
-# CLI subcommands (24 subcommands as of v2.1.280)
+# CLI subcommands (24 subcommands as of v2.1.284)
 _CLAUDE_SUBCOMMANDS=(
   agents attach auth auto-mode daemon doctor gateway import install
   logs mcp plugin plugins project rc remote-control respawn rm
@@ -171,7 +171,7 @@ _CLAUDE_VARIADIC_FLAGS=(
 
 # Built-in tool names accepted by --tools, --allowedTools, and --disallowedTools.
 # `claude --help` carries no listing and the CLI accepts unknown names without
-# complaint, so this mirrors the name constants in the v2.1.280 binary: the
+# complaint, so this mirrors the name constants in the v2.1.284 binary: the
 # strings it defines and then passes as a tool's `name`. MCP and
 # self-hosted-runner tools are left out: those names come from a connected
 # server, not from the build. "default" comes from the --tools help text.
@@ -515,7 +515,7 @@ _claude_complete()
   # Flag and slash command argument value completions
   case "$value_flag" in
     --model|--fallback-model|--judge-model|/model)
-      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku fable sonnet[1m] opus[1m] fable[1m] opusplan claude-fable-5-1 claude-fable-5-1[1m] claude-fable-5 claude-fable-5[1m] claude-opus-5-5 claude-opus-5-5[1m] claude-opus-5 claude-opus-5[1m] claude-sonnet-5 claude-sonnet-5[1m] claude-opus-4-8 claude-opus-4-8[1m] claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
+      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku fable sonnet[1m] opus[1m] fable[1m] opusplan claude-fable-5-1 claude-fable-5-1[1m] claude-fable-5 claude-fable-5[1m] claude-opus-5-5 claude-opus-5-5[1m] claude-opus-5 claude-opus-5[1m] claude-sonnet-5-5 claude-sonnet-5-5[1m] claude-sonnet-5 claude-sonnet-5[1m] claude-opus-4-8 claude-opus-4-8[1m] claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
       return 0
       ;;
     --output-format)

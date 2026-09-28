@@ -157,6 +157,13 @@ setup() {
   [[ "$joined" == *" claude-opus-5-5[1m] "* ]]
 }
 
+@test "--model completes with claude-sonnet-5-5 and its 1M variant" {
+  _simulate_completion "claude" "--model" "" -- 2
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" claude-sonnet-5-5 "* ]]
+  [[ "$joined" == *" claude-sonnet-5-5[1m] "* ]]
+}
+
 @test "--model completes with fable aliases" {
   _simulate_completion "claude" "--model" "" -- 2
   local joined=" ${COMPREPLY[*]} "
@@ -358,8 +365,13 @@ setup() {
   [[ "$joined" != *"/help"* ]]
 }
 
-@test "_CLAUDE_BUILTIN_COMMANDS array has 132 entries" {
-  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 132 ]]
+@test "_CLAUDE_BUILTIN_COMMANDS includes /rate-limit-options" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" == *" /rate-limit-options "* ]]
+}
+
+@test "_CLAUDE_BUILTIN_COMMANDS array has 133 entries" {
+  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 133 ]]
 }
 
 @test "/artifact-diagramming is in builtin commands" {
@@ -661,8 +673,13 @@ setup() {
   [[ "$joined" == *"1m"* ]]
 }
 
-@test "_CLAUDE_FLAGS array has 80 entries" {
-  [[ "${#_CLAUDE_FLAGS[@]}" -eq 80 ]]
+@test "_CLAUDE_FLAGS includes --client-data-url" {
+  local joined=" ${_CLAUDE_FLAGS[*]} "
+  [[ "$joined" == *" --client-data-url "* ]]
+}
+
+@test "_CLAUDE_FLAGS array has 81 entries" {
+  [[ "${#_CLAUDE_FLAGS[@]}" -eq 81 ]]
 }
 
 # --- subcommand completions ---

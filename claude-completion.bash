@@ -77,9 +77,9 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /verify /voice /web-setup /workflow-authoring /workflows
 )
 
-# CLI flags (81 flags as of v2.1.284)
+# CLI flags (82 flags as of v2.1.284)
 _CLAUDE_FLAGS=(
-  --add-dir
+  --add-dir --advisor
   --agent --agents
   --allow-dangerously-skip-permissions
   --allowedTools --allowed-tools
@@ -147,7 +147,7 @@ _CLAUDE_PLUGIN_MARKETPLACE_SUBCOMMANDS=(add remove list update)
 # `mcp`. Flags whose value is optional belong here too: when the next word
 # starts with a dash it is read as the next flag rather than as the value.
 _CLAUDE_VALUE_FLAGS=(
-  --add-dir --agent --agents --allowedTools --allowed-tools
+  --add-dir --advisor --agent --agents --allowedTools --allowed-tools
   --append-subagent-system-prompt-file
   --append-system-prompt --append-system-prompt-file --autocompact
   --betas --cloud -d --debug --debug-file --disallowedTools --disallowed-tools
@@ -514,7 +514,7 @@ _claude_complete()
 
   # Flag and slash command argument value completions
   case "$value_flag" in
-    --model|--fallback-model|--judge-model|/model)
+    --advisor|--model|--fallback-model|--judge-model|/model)
       mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku fable sonnet[1m] opus[1m] fable[1m] opusplan claude-fable-5-1 claude-fable-5-1[1m] claude-fable-5 claude-fable-5[1m] claude-opus-5-5 claude-opus-5-5[1m] claude-opus-5 claude-opus-5[1m] claude-sonnet-5-5 claude-sonnet-5-5[1m] claude-sonnet-5 claude-sonnet-5[1m] claude-opus-4-8 claude-opus-4-8[1m] claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
       return 0
       ;;

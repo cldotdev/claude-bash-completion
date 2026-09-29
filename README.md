@@ -7,7 +7,7 @@ Bash completion script for the Claude Code CLI, providing tab completion for bui
 ## Features
 
 - Auto-completion for all Claude Code built-in slash commands (133 commands)
-- Auto-completion for CLI flags and their values (81 flags)
+- Auto-completion for CLI flags and their values (82 flags)
 - Auto-completion for CLI subcommands (24 subcommands), each with its own sub-subcommands, flags, and values, down to `claude plugin marketplace add --scope`
 - Auto-completion for built-in tool names on `--tools`, `--allowedTools`, and `--disallowedTools`
 - Auto-completion for recorded session titles and IDs on `--resume` and `-r`, most recent first

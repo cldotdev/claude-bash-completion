@@ -179,6 +179,13 @@ setup() {
   [[ "$joined" == *"sonnet"* ]]
 }
 
+@test "--advisor completes with model values" {
+  _simulate_completion "claude" "--advisor" "" -- 2
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" opus "* ]]
+  [[ "$joined" == *" fable "* ]]
+}
+
 @test "/model completes with model values" {
   _simulate_completion "claude" "/model" "" -- 2
   [[ "${#COMPREPLY[@]}" -gt 0 ]]
@@ -678,8 +685,13 @@ setup() {
   [[ "$joined" == *" --client-data-url "* ]]
 }
 
-@test "_CLAUDE_FLAGS array has 81 entries" {
-  [[ "${#_CLAUDE_FLAGS[@]}" -eq 81 ]]
+@test "_CLAUDE_FLAGS includes --advisor" {
+  local joined=" ${_CLAUDE_FLAGS[*]} "
+  [[ "$joined" == *" --advisor "* ]]
+}
+
+@test "_CLAUDE_FLAGS array has 82 entries" {
+  [[ "${#_CLAUDE_FLAGS[@]}" -eq 82 ]]
 }
 
 # --- subcommand completions ---

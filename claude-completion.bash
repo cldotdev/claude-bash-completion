@@ -47,7 +47,7 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (133 commands as of v2.1.284)
+# Built-in slash commands (133 commands as of v2.1.288)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /allowed-tools /android
   /artifact-capabilities /artifact-design /artifact-diagramming /artifacts
@@ -77,7 +77,7 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /verify /voice /web-setup /workflow-authoring /workflows
 )
 
-# CLI flags (82 flags as of v2.1.284)
+# CLI flags (82 flags as of v2.1.288)
 _CLAUDE_FLAGS=(
   --add-dir --advisor
   --agent --agents
@@ -119,10 +119,10 @@ _CLAUDE_FLAGS=(
   -w --worktree
 )
 
-# CLI subcommands (24 subcommands as of v2.1.284)
+# CLI subcommands (26 subcommands as of v2.1.288)
 _CLAUDE_SUBCOMMANDS=(
-  agents attach auth auto-mode daemon doctor gateway import install
-  logs mcp plugin plugins project rc remote-control respawn rm
+  agents attach auth auto-mode daemon doctor gateway import install kill
+  logs mcp plugin plugins project purge rc remote-control respawn rm
   self-hosted-runner setup-token stop ultrareview update upgrade
 )
 
@@ -130,7 +130,7 @@ _CLAUDE_SUBCOMMANDS=(
 _CLAUDE_EFFORT_LEVELS=(low medium high xhigh max)
 
 # Flags accepted by the /code-review command (shared by both flag paths)
-_CLAUDE_CODE_REVIEW_FLAGS=(--comment --fix)
+_CLAUDE_CODE_REVIEW_FLAGS=(--comment --fix --max-findings --no-post --post)
 
 # Positional values accepted by the /code-review command: the effort levels
 # plus "ultra", which escalates the review to the cloud-hosted /ultrareview
@@ -171,7 +171,7 @@ _CLAUDE_VARIADIC_FLAGS=(
 
 # Built-in tool names accepted by --tools, --allowedTools, and --disallowedTools.
 # `claude --help` carries no listing and the CLI accepts unknown names without
-# complaint, so this mirrors the name constants in the v2.1.284 binary: the
+# complaint, so this mirrors the name constants in the v2.1.288 binary: the
 # strings it defines and then passes as a tool's `name`. MCP and
 # self-hosted-runner tools are left out: those names come from a connected
 # server, not from the build. "default" comes from the --tools help text.
@@ -211,10 +211,11 @@ _CLAUDE_MCP_SUBCOMMANDS=(
   reset-project-choices serve
 )
 _CLAUDE_PLUGIN_CLI_SUBCOMMANDS=(
-  autoremove details disable enable eval i init install list marketplace new
-  prune remove tag uninstall update validate
+  autoremove configure details disable enable eval i init install list
+  marketplace new prune remove tag test uninstall update validate
 )
 _CLAUDE_PLUGIN_CLI_MARKETPLACE_SUBCOMMANDS=(add list remove rm update)
+# `claude project purge` is the old name of `claude purge` and still runs.
 _CLAUDE_PROJECT_SUBCOMMANDS=(purge)
 _CLAUDE_SELF_HOSTED_RUNNER_SUBCOMMANDS=(doctor orchestrator setup)
 
@@ -597,6 +598,13 @@ _claude_complete()
         return 0
       fi
       ;;
+    --max-findings)
+      # The other accepted value, a positive integer, cannot be completed.
+      if [[ " ${COMP_WORDS[*]} " == *" /code-review "* ]]; then
+        mapfile -t COMPREPLY < <(compgen -W "all default" -- "$cur")
+        return 0
+      fi
+      ;;
     --setting-sources)
       mapfile -t COMPREPLY < <(compgen -W "user project local" -- "$cur")
       return 0
@@ -637,7 +645,7 @@ _claude_complete()
         _claude_reply_subcommand "$cur" "--add-dir --agent --all --allow-dangerously-skip-permissions --cwd --dangerously-skip-permissions --effort --json --mcp-config --model --permission-mode --plugin-dir --restricted --setting-sources --settings --strict-mcp-config -h --help"
         return 0
         ;;
-      attach|logs|stop)
+      attach|kill|logs|stop)
         _claude_reply_subcommand "$cur" "-h --help"
         return 0
         ;;
@@ -731,10 +739,10 @@ _claude_complete()
         case "$sub" in
           marketplace)
             case "$nested" in
-              add) _claude_reply_subcommand "$cur" "--claudeai --scope --sparse -h --help" "" ;;
+              add) _claude_reply_subcommand "$cur" "--claudeai --json --scope --sparse -h --help" "" ;;
               list) _claude_reply_subcommand "$cur" "--json -h --help" "" ;;
-              remove|rm) _claude_reply_subcommand "$cur" "--scope -h --help" "" ;;
-              update) _claude_reply_subcommand "$cur" "-h --help" "" ;;
+              remove|rm) _claude_reply_subcommand "$cur" "--json --scope -h --help" "" ;;
+              update) _claude_reply_subcommand "$cur" "--json -h --help" "" ;;
               *) _claude_reply_subcommand "$cur" "-h --help" "${_CLAUDE_PLUGIN_CLI_MARKETPLACE_SUBCOMMANDS[*]}" ;;
             esac
             ;;
@@ -750,12 +758,13 @@ _claude_complete()
           disable) _claude_reply_subcommand "$cur" "-a --all --json -s --scope -h --help" "" ;;
           enable) _claude_reply_subcommand "$cur" "--json -s --scope -h --help" "" ;;
           update) _claude_reply_subcommand "$cur" "--accept-command --json -s --scope -y --yes -h --help" "" ;;
-          list) _claude_reply_subcommand "$cur" "--available --json -h --help" "" ;;
+          list) _claude_reply_subcommand "$cur" "--available --data-size --json -h --help" "" ;;
           prune|autoremove) _claude_reply_subcommand "$cur" "--dry-run -s --scope -y --yes -h --help" "" ;;
           tag) _claude_reply_subcommand "$cur" "--dry-run -f --force -m --message --push --remote -h --help" "" ;;
           uninstall|remove) _claude_reply_subcommand "$cur" "--json --keep-data --prune -s --scope -y --yes -h --help" "" ;;
           validate) _claude_reply_subcommand "$cur" "--json --strict -h --help" "" ;;
-          details) _claude_reply_subcommand "$cur" "-h --help" "" ;;
+          configure) _claude_reply_subcommand "$cur" "--json --values-stdin -h --help" "" ;;
+          details|test) _claude_reply_subcommand "$cur" "-h --help" "" ;;
           *) _claude_reply_subcommand "$cur" "-h --help" "${_CLAUDE_PLUGIN_CLI_SUBCOMMANDS[*]}" ;;
         esac
         return 0
@@ -767,6 +776,10 @@ _claude_complete()
         esac
         return 0
         ;;
+      purge)
+        _claude_reply_subcommand "$cur" "--all --dry-run -i --interactive -y --yes -h --help"
+        return 0
+        ;;
       rc|remote-control)
         case "$prev" in
           --spawn)
@@ -774,7 +787,7 @@ _claude_complete()
             return 0
             ;;
         esac
-        _claude_reply_subcommand "$cur" "--capacity --chrome -c --continue --create-session-in-dir --debug-file --name --no-chrome --no-create-session-in-dir --permission-mode --remote-control-session-name-prefix --session-id --spawn -v --verbose -h --help"
+        _claude_reply_subcommand "$cur" "--capacity --chrome -c --continue --create-session-in-dir -d --debug --debug-file --name --no-chrome --no-create-session-in-dir --permission-mode --remote-control-session-name-prefix --session-id --spawn -v --verbose -h --help"
         return 0
         ;;
       respawn)

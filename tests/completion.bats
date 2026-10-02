@@ -264,12 +264,50 @@ setup() {
   [[ "${COMPREPLY[0]}" == "--fix" ]]
 }
 
-@test "/code-review with -- completes both --comment and --fix" {
+@test "/code-review with -- completes all of its flags" {
   _simulate_completion "claude" "/code-review" "--" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 5 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" --comment "* ]]
+  [[ "$joined" == *" --fix "* ]]
+  [[ "$joined" == *" --max-findings "* ]]
+  [[ "$joined" == *" --no-post "* ]]
+  [[ "$joined" == *" --post "* ]]
+}
+
+@test "/code-review with --m completes to --max-findings" {
+  _simulate_completion "claude" "/code-review" "--m" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--max-findings" ]]
+}
+
+@test "/code-review with --p completes to --post" {
+  _simulate_completion "claude" "/code-review" "--p" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--post" ]]
+}
+
+@test "/code-review --max-findings completes with all and default" {
+  _simulate_completion "claude" "/code-review" "--max-findings" "" -- 3
   [[ "${#COMPREPLY[@]}" -eq 2 ]]
-  local joined="${COMPREPLY[*]}"
-  [[ "$joined" == *"--comment"* ]]
-  [[ "$joined" == *"--fix"* ]]
+  [[ "${COMPREPLY[*]}" == "all default" ]]
+}
+
+@test "/code-review flags still complete after --max-findings all" {
+  _simulate_completion "claude" "/code-review" "--max-findings" "all" "--f" -- 4
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--fix" ]]
+}
+
+@test "--max-findings is not offered outside /code-review" {
+  _simulate_completion "claude" "--m" -- 1
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" != *" --max-findings "* ]]
+}
+
+@test "--desktop is not in flags" {
+  local joined=" ${_CLAUDE_FLAGS[*]} "
+  [[ "$joined" != *" --desktop "* ]]
 }
 
 @test "/plugin completes with subcommands" {
@@ -720,6 +758,55 @@ setup() {
   [[ "$joined" != *"doctor"* ]]
 }
 
+@test "kill and purge are in subcommands" {
+  local joined=" ${_CLAUDE_SUBCOMMANDS[*]} "
+  [[ "$joined" == *" kill "* ]]
+  [[ "$joined" == *" purge "* ]]
+}
+
+@test "claude purge completes with --dry-run" {
+  _simulate_completion "claude" "purge" "--d" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--dry-run" ]]
+}
+
+@test "claude kill completes with --help" {
+  _simulate_completion "claude" "kill" "--h" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--help" ]]
+}
+
+@test "claude plugin completes with configure and test" {
+  _simulate_completion "claude" "plugin" "" -- 2
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" configure "* ]]
+  [[ "$joined" == *" test "* ]]
+}
+
+@test "claude plugin configure completes with --values-stdin" {
+  _simulate_completion "claude" "plugin" "configure" "--v" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--values-stdin" ]]
+}
+
+@test "claude plugin list completes with --data-size" {
+  _simulate_completion "claude" "plugin" "list" "--d" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--data-size" ]]
+}
+
+@test "claude plugin marketplace add completes with --json" {
+  _simulate_completion "claude" "plugin" "marketplace" "add" "--j" -- 4
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--json" ]]
+}
+
+@test "claude remote-control completes with --debug" {
+  _simulate_completion "claude" "remote-control" "--deb" -- 2
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" --debug "* ]]
+}
+
 @test "gateway, project, and ultrareview are in subcommands" {
   local joined="${_CLAUDE_SUBCOMMANDS[*]}"
   [[ "$joined" == *"gateway"* ]]
@@ -749,8 +836,8 @@ setup() {
   [[ "$joined" == *" self-hosted-runner "* ]]
 }
 
-@test "_CLAUDE_SUBCOMMANDS array has 24 entries" {
-  [[ "${#_CLAUDE_SUBCOMMANDS[@]}" -eq 24 ]]
+@test "_CLAUDE_SUBCOMMANDS array has 26 entries" {
+  [[ "${#_CLAUDE_SUBCOMMANDS[@]}" -eq 26 ]]
 }
 
 @test "slash command completion still works at position 1" {

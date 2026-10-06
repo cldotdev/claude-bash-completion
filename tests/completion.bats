@@ -1175,6 +1175,12 @@ setup() {
   [[ "${#COMPREPLY[@]}" -eq 4 ]]
 }
 
+@test "OfferChromeSetup completes with --tools" {
+  _simulate_completion "claude" "--tools" "Off" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "OfferChromeSetup" ]]
+}
+
 @test "tools the build no longer defines are not in tool names" {
   local joined=" ${_CLAUDE_TOOL_NAMES[*]} "
   [[ "$joined" != *" Snip "* ]]

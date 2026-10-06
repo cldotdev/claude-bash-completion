@@ -47,7 +47,7 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (133 commands as of v2.1.288)
+# Built-in slash commands (133 commands as of v2.1.290)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /allowed-tools /android
   /artifact-capabilities /artifact-design /artifact-diagramming /artifacts
@@ -77,7 +77,7 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /verify /voice /web-setup /workflow-authoring /workflows
 )
 
-# CLI flags (82 flags as of v2.1.288)
+# CLI flags (82 flags as of v2.1.290)
 _CLAUDE_FLAGS=(
   --add-dir --advisor
   --agent --agents
@@ -119,7 +119,7 @@ _CLAUDE_FLAGS=(
   -w --worktree
 )
 
-# CLI subcommands (26 subcommands as of v2.1.288)
+# CLI subcommands (26 subcommands as of v2.1.290)
 _CLAUDE_SUBCOMMANDS=(
   agents attach auth auto-mode daemon doctor gateway import install kill
   logs mcp plugin plugins project purge rc remote-control respawn rm
@@ -171,7 +171,7 @@ _CLAUDE_VARIADIC_FLAGS=(
 
 # Built-in tool names accepted by --tools, --allowedTools, and --disallowedTools.
 # `claude --help` carries no listing and the CLI accepts unknown names without
-# complaint, so this mirrors the name constants in the v2.1.288 binary: the
+# complaint, so this mirrors the name constants in the v2.1.290 binary: the
 # strings it defines and then passes as a tool's `name`. MCP and
 # self-hosted-runner tools are left out: those names come from a connected
 # server, not from the build. "default" comes from the --tools help text.
@@ -187,7 +187,7 @@ _CLAUDE_TOOL_NAMES=(
   ListPlugins ListSkills
   Monitor MultiEdit
   NotebookEdit NotebookRead
-  ObserverReport
+  ObserverReport OfferChromeSetup
   PowerShell Projects PushNotification
   REPL Read ReadMcpResourceDirTool ReadMcpResourceTool ReadNotifications
   RefreshMcpTools RemoteTrigger ReportFindings

@@ -1249,6 +1249,192 @@ _make_sessions() {
   [[ "${#COMPREPLY[@]}" -eq 0 ]]
 }
 
+# --- background sessions ---
+
+# Write one job under the fake ~/.claude/jobs, pretty-printed as Claude Code
+# does, with a nested object that carries a name of its own.
+# Args: id, mtime for touch -t, name (empty for none).
+_write_job() {
+  local mtime="$2" name="$3" dir="$HOME/.claude/jobs/$1"
+  mkdir -p "$dir"
+  {
+    printf '{\n  "state": "working",\n  "intent": "x",\n'
+    [[ -z "$name" ]] || printf '  "name": "%s",\n  "nameSource": "user",\n' "$name"
+    printf '  "nested": {\n    "name": "nested-name"\n  },\n  "daemonShort": "d650b624"\n}\n'
+  } > "$dir/state.json"
+  touch -t "$mtime" "$dir/state.json"
+}
+
+# Write the fake daemon roster, pretty-printed, with the given ids as workers.
+_write_roster() {
+  local id sep=""
+  {
+    printf '{\n  "proto": 1,\n  "workers": {\n'
+    for id in "$@"; do
+      printf '%s    "%s": {\n      "pid": 1\n    }' "$sep" "$id"
+      sep=$',\n'
+    done
+    printf '\n  }\n}\n'
+  } > "$HOME/.claude/daemon/roster.json"
+}
+
+_running_ids="c9d0e1f2 a7b8c9d0 0a1b2c3d f6a7b8c9 e5f6a7b8 d4e5f6a7 b2c3d4e5 a1b2c3d4"
+_all_ids="c9d0e1f2 b8c9d0e1 a7b8c9d0 0a1b2c3d f6a7b8c9 e5f6a7b8 d4e5f6a7 c3d4e5f6 b2c3d4e5 a1b2c3d4"
+
+# Jobs, oldest first: names that survive the filters (a1b2c3d4, b2c3d4e5),
+# a stopped job (c3d4e5f6), a hex-like name (d4e5f6a7), names contained in
+# another job's name, one of them in a stopped job's (e5f6a7b8, f6a7b8c9,
+# 0a1b2c3d), identical names across a running and a stopped job (a7b8c9d0,
+# b8c9d0e1), and a job without a name (c9d0e1f2).
+_make_jobs() {
+  HOME="$BATS_TEST_TMPDIR/home"
+  mkdir -p "$HOME/.claude/jobs" "$HOME/.claude/daemon"
+  _write_job a1b2c3d4 202601010000 "deploy-web"
+  _write_job b2c3d4e5 202602010000 "dev:demo fix"
+  _write_job c3d4e5f6 202603010000 "Stopped Job"
+  _write_job d4e5f6a7 202604010000 "DeadBeef"
+  _write_job e5f6a7b8 202605010000 "web"
+  _write_job f6a7b8c9 202606010000 "DEPLOY"
+  _write_job 0a1b2c3d 202607010000 "stopped"
+  _write_job a7b8c9d0 202608010000 "twin"
+  _write_job b8c9d0e1 202609010000 "TWIN"
+  _write_job c9d0e1f2 202610010000 ""
+  # shellcheck disable=SC2086
+  _write_roster $_running_ids
+  echo '{}' > "$HOME/.claude/jobs/pins.json"
+  mkdir -p "$HOME/.claude/jobs/not-a-job"
+  cp "$HOME/.claude/jobs/a1b2c3d4/state.json" "$HOME/.claude/jobs/not-a-job/state.json"
+}
+
+@test "attach offers running names, then every job id newest first" {
+  _make_jobs
+  _simulate_completion "claude" "attach" "" -- 2
+  [[ "${COMPREPLY[*]}" == "dev:demo\\ fix deploy-web $_all_ids" ]]
+}
+
+@test "logs offers running names and running ids only" {
+  _make_jobs
+  _simulate_completion "claude" "logs" "" -- 2
+  [[ "${COMPREPLY[*]}" == "dev:demo\\ fix deploy-web $_running_ids" ]]
+}
+
+@test "stop and kill offer running ids only" {
+  _make_jobs
+  local sub
+  for sub in stop kill; do
+    _simulate_completion "claude" "$sub" "" -- 2
+    [[ "${COMPREPLY[*]}" == "$_running_ids" ]]
+  done
+}
+
+@test "rm offers every job id and no names" {
+  _make_jobs
+  _simulate_completion "claude" "rm" "" -- 2
+  [[ "${COMPREPLY[*]}" == "$_all_ids" ]]
+}
+
+@test "respawn offers running ids only" {
+  _make_jobs
+  _simulate_completion "claude" "respawn" "" -- 2
+  [[ "${COMPREPLY[*]}" == "$_running_ids" ]]
+}
+
+@test "a name that reads as an id, or sits inside another name, is not offered" {
+  _make_jobs
+  _simulate_completion "claude" "attach" "" -- 2
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" != *" DeadBeef "* ]]
+  [[ "$joined" != *" web "* ]]
+  [[ "$joined" != *" DEPLOY "* ]]
+  [[ "$joined" != *" stopped "* ]]
+  [[ "$joined" != *" twin "* && "$joined" != *" TWIN "* ]]
+  [[ "$joined" != *"nested-name"* ]]
+  [[ "$joined" != *"Stopped"* ]]
+}
+
+@test "a name with a backslash is not offered" {
+  _make_jobs
+  _write_job 1a2b3c4d 202611010000 'say \"hi\"'
+  # shellcheck disable=SC2086
+  _write_roster $_running_ids 1a2b3c4d
+  _simulate_completion "claude" "logs" "" -- 2
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" 1a2b3c4d "* ]]
+  [[ "$joined" != *"say"* ]]
+}
+
+@test "a job name carrying a space and colons completes escaped and trimmed" {
+  _make_jobs
+  _simulate_line "claude attach dev:demo"
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "demo\\ fix" ]]
+  _simulate_line "claude attach dev:"
+  [[ "${COMPREPLY[0]}" == "demo\\ fix" ]]
+}
+
+@test "job completion narrows on the typed prefix" {
+  _make_jobs
+  _simulate_completion "claude" "stop" "a" -- 2
+  [[ "${COMPREPLY[*]}" == "a7b8c9d0 a1b2c3d4" ]]
+}
+
+@test "job completion yields nothing and no error without a jobs directory" {
+  HOME="$BATS_TEST_TMPDIR/empty-home"
+  mkdir -p "$HOME"
+  local sub
+  for sub in attach logs stop kill rm respawn; do
+    run _simulate_completion "claude" "$sub" "" -- 2
+    [[ "$status" -eq 0 && -z "$output" ]]
+    _simulate_completion "claude" "$sub" "" -- 2
+    [[ "${#COMPREPLY[@]}" -eq 0 ]]
+  done
+}
+
+@test "job ids are offered when the roster is missing, with nothing running" {
+  _make_jobs
+  rm "$HOME/.claude/daemon/roster.json"
+  _simulate_completion "claude" "attach" "" -- 2
+  [[ "${COMPREPLY[*]}" == "$_all_ids" ]]
+  _simulate_completion "claude" "stop" "" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 0 ]]
+}
+
+@test "a job without a state file is skipped without error" {
+  _make_jobs
+  mkdir "$HOME/.claude/jobs/12345678"
+  run _simulate_completion "claude" "rm" "" -- 2
+  [[ "$status" -eq 0 && -z "$output" ]]
+  _simulate_completion "claude" "rm" "" -- 2
+  [[ "${COMPREPLY[*]}" == "$_all_ids" ]]
+}
+
+@test "job subcommands still complete their flags on a dash" {
+  _make_jobs
+  _simulate_completion "claude" "attach" "-" -- 2
+  [[ "${COMPREPLY[*]}" == "-h --help" ]]
+  _simulate_completion "claude" "rm" "--" -- 2
+  [[ "${COMPREPLY[*]}" == "--discard-unpushed --force-remove-worktree --help" ]]
+  _simulate_completion "claude" "respawn" "--a" -- 2
+  [[ "${COMPREPLY[*]}" == "--all" ]]
+}
+
+@test "job subcommands offer nothing after the first positional" {
+  _make_jobs
+  local sub
+  for sub in attach logs stop kill rm respawn; do
+    _simulate_completion "claude" "$sub" "a1b2c3d4" "" -- 3
+    [[ "${#COMPREPLY[@]}" -eq 0 ]]
+  done
+}
+
+@test "rm offers nothing after a flag that takes a value" {
+  _make_jobs
+  _simulate_completion "claude" "rm" "--discard-unpushed" "" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 0 ]]
+  _simulate_completion "claude" "rm" "--force-remove-worktree" "" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 0 ]]
+}
+
 # --- session titles ---
 
 # Build a project directory for the working directory, with one titled session

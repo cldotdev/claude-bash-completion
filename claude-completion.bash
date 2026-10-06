@@ -374,6 +374,92 @@ _claude_session_titles() {
   return 0
 }
 
+# Collect the background sessions under ~/.claude/jobs into _claude_job_ids
+# (every job, newest first), and, where a scope asks for them,
+# _claude_job_running (those the daemon roster lists as running, same order)
+# and _claude_job_names (the running jobs' names that Claude Code would resolve
+# to exactly that job). The caller declares the three arrays. Claude Code reads
+# a typed word as an id whenever it looks like a hex prefix, and refuses a
+# name that more than one job matches, case-insensitively and by substring,
+# across stopped jobs too. A name is therefore left out when it looks like hex,
+# when it sits inside another job's name (identical names rule each other
+# out), or when it carries a backslash, whose JSON escape grep cannot undo
+# here. state.json and roster.json are pretty-printed, so the top-level name
+# and the roster's worker keys are told apart from nested ones by indent.
+# Args: ids wanted (all|running), names wanted (running|none).
+_claude_session_jobs() {
+  local file id line name lower other
+  local -a found=() files=()
+  local -A names=() alive=()
+  _claude_job_ids=()
+  _claude_job_running=()
+  _claude_job_names=()
+  mapfile -t found < <(command ls -t "$HOME"/.claude/jobs/*/state.json 2>/dev/null)
+  for file in "${found[@]}"; do
+    id="${file%/state.json}"
+    id="${id##*/}"
+    if [[ "$id" =~ ^[a-f0-9]{8}$ ]]; then
+      _claude_job_ids+=("$id")
+      files+=("$file")
+    fi
+  done
+  [[ "$1" == running || "$2" == running ]] || return 0
+  while IFS= read -r line; do
+    alive["${line:5:8}"]=1
+  done < <(grep -o '^    "[a-f0-9]\{8\}": {' "$HOME/.claude/daemon/roster.json" 2>/dev/null)
+  for id in "${_claude_job_ids[@]}"; do
+    if [[ -n "${alive["$id"]-}" ]]; then
+      _claude_job_running+=("$id")
+    fi
+  done
+  # With no running job there is nothing to name. Past this point files is not
+  # empty either, so grep never falls back to reading the terminal.
+  [[ "$2" == running && "${#_claude_job_running[@]}" -gt 0 ]] || return 0
+  while IFS= read -r line; do
+    file="${line%%:  \"name\": \"*}"
+    id="${file%/state.json}"
+    id="${id##*/}"
+    name="${line#*:  \"name\": \"}"
+    name="${name%,}"
+    names["$id"]="${name%\"}"
+  done < <(grep -H '^  "name": "' "${files[@]}" 2>/dev/null)
+  for id in "${_claude_job_running[@]}"; do
+    name="${names["$id"]-}"
+    lower="${name,,}"
+    if [[ "$name" =~ ^[[:space:]]*$ || "$name" == *\\* ||
+      "$lower" =~ ^[[:space:]]*[a-f0-9]{1,8}[[:space:]]*$ ]]; then
+      continue
+    fi
+    for other in "${!names[@]}"; do
+      [[ "$other" == "$id" || "${names["$other"],,}" != *"$lower"* ]] || continue 2
+    done
+    _claude_job_names+=("$name")
+  done
+  return 0
+}
+
+# Offer the background sessions a subcommand takes as its one positional word:
+# names, then ids, as --resume does. A word already typed ends the offer, and
+# a dash brings back the subcommand's flags.
+# Args: current word, positional already typed (empty if none), flag list,
+# ids offered (all|running), names offered (running|none).
+_claude_reply_jobs() {
+  local -a _claude_job_ids _claude_job_running _claude_job_names offer_ids
+  if [[ "$1" == -* ]]; then
+    _claude_reply_subcommand "$1" "$3"
+    return 0
+  fi
+  COMPREPLY=()
+  [[ -z "$2" ]] || return 0
+  _claude_session_jobs "$4" "$5"
+  if [[ "$4" == all ]]; then
+    offer_ids=("${_claude_job_ids[@]}")
+  else
+    offer_ids=("${_claude_job_running[@]}")
+  fi
+  _claude_reply_values "$1" "${_claude_job_names[@]}" "${offer_ids[@]}"
+}
+
 # Rebuild words, cword, cur, and prev with colon-separated words kept whole.
 # Stands in for the -n option of the bash-completion parsers where the package
 # is absent. COMP_WORDS alone cannot tell `a:b` from `a : b`, so adjacency is
@@ -645,12 +731,24 @@ _claude_complete()
         _claude_reply_subcommand "$cur" "--add-dir --agent --all --allow-dangerously-skip-permissions --cwd --dangerously-skip-permissions --effort --json --mcp-config --model --permission-mode --plugin-dir --restricted --setting-sources --settings --strict-mcp-config -h --help"
         return 0
         ;;
-      attach|kill|logs|stop)
-        _claude_reply_subcommand "$cur" "-h --help"
+      attach)
+        _claude_reply_jobs "$cur" "$sub" "-h --help" all running
+        return 0
+        ;;
+      logs)
+        _claude_reply_jobs "$cur" "$sub" "-h --help" running running
+        return 0
+        ;;
+      kill|stop)
+        _claude_reply_jobs "$cur" "$sub" "-h --help" running none
         return 0
         ;;
       rm)
-        _claude_reply_subcommand "$cur" "--discard-unpushed --force-remove-worktree -h --help"
+        # Both flags take a value of their own, not a session.
+        case "$prev" in
+          --discard-unpushed|--force-remove-worktree) return 0 ;;
+        esac
+        _claude_reply_jobs "$cur" "$sub" "--discard-unpushed --force-remove-worktree -h --help" all none
         return 0
         ;;
       auth)
@@ -791,7 +889,7 @@ _claude_complete()
         return 0
         ;;
       respawn)
-        _claude_reply_subcommand "$cur" "--all -h --help"
+        _claude_reply_jobs "$cur" "$sub" "--all -h --help" running none
         return 0
         ;;
       self-hosted-runner)

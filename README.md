@@ -11,6 +11,7 @@ Bash completion script for the Claude Code CLI, providing tab completion for bui
 - Auto-completion for CLI subcommands (26 subcommands), each with its own sub-subcommands, flags, and values, down to `claude plugin marketplace add --scope`
 - Auto-completion for built-in tool names on `--tools`, `--allowedTools`, and `--disallowedTools`
 - Auto-completion for recorded session titles and IDs on `--resume` and `-r`, most recent first
+- Auto-completion for background session IDs and names on `claude attach|logs|stop|kill|rm|respawn`, most recent first
 - Auto-completion for custom commands and skills from personal and project directories
 - Slash command completion reaches inside an opening quote, which is where a command that carries arguments has to be typed
 - Filesystem fallback when no programmatic completion matches

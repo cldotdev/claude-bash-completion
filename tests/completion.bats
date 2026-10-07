@@ -164,6 +164,13 @@ setup() {
   [[ "$joined" == *" claude-sonnet-5-5[1m] "* ]]
 }
 
+@test "--model completes with claude-haiku-5-5 and its 1M variant" {
+  _simulate_completion "claude" "--model" "" -- 2
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" claude-haiku-5-5 "* ]]
+  [[ "$joined" == *" claude-haiku-5-5[1m] "* ]]
+}
+
 @test "--model completes with fable aliases" {
   _simulate_completion "claude" "--model" "" -- 2
   local joined=" ${COMPREPLY[*]} "
@@ -930,6 +937,9 @@ setup() {
   _simulate_completion "claude" "plugin" "install" "--j" -- 3
   [[ "${#COMPREPLY[@]}" -eq 1 ]]
   [[ "${COMPREPLY[0]}" == "--json" ]]
+  _simulate_completion "claude" "plugin" "install" "--mar" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--marketplace" ]]
   _simulate_completion "claude" "plugin" "install" "--reg" -- 3
   [[ "${#COMPREPLY[@]}" -eq 1 ]]
   [[ "${COMPREPLY[0]}" == "--registry" ]]
@@ -1179,6 +1189,12 @@ setup() {
   _simulate_completion "claude" "--tools" "Off" -- 2
   [[ "${#COMPREPLY[@]}" -eq 1 ]]
   [[ "${COMPREPLY[0]}" == "OfferChromeSetup" ]]
+}
+
+@test "PublishPlugin completes with --tools" {
+  _simulate_completion "claude" "--tools" "Pub" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "PublishPlugin" ]]
 }
 
 @test "tools the build no longer defines are not in tool names" {

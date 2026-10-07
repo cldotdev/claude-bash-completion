@@ -47,7 +47,7 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (133 commands as of v2.1.290)
+# Built-in slash commands (133 commands as of v2.1.293)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /allowed-tools /android
   /artifact-capabilities /artifact-design /artifact-diagramming /artifacts
@@ -77,7 +77,7 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /verify /voice /web-setup /workflow-authoring /workflows
 )
 
-# CLI flags (82 flags as of v2.1.290)
+# CLI flags (82 flags as of v2.1.293)
 _CLAUDE_FLAGS=(
   --add-dir --advisor
   --agent --agents
@@ -119,7 +119,7 @@ _CLAUDE_FLAGS=(
   -w --worktree
 )
 
-# CLI subcommands (26 subcommands as of v2.1.290)
+# CLI subcommands (26 subcommands as of v2.1.293)
 _CLAUDE_SUBCOMMANDS=(
   agents attach auth auto-mode daemon doctor gateway import install kill
   logs mcp plugin plugins project purge rc remote-control respawn rm
@@ -171,7 +171,7 @@ _CLAUDE_VARIADIC_FLAGS=(
 
 # Built-in tool names accepted by --tools, --allowedTools, and --disallowedTools.
 # `claude --help` carries no listing and the CLI accepts unknown names without
-# complaint, so this mirrors the name constants in the v2.1.290 binary: the
+# complaint, so this mirrors the name constants in the v2.1.293 binary: the
 # strings it defines and then passes as a tool's `name`. MCP and
 # self-hosted-runner tools are left out: those names come from a connected
 # server, not from the build. "default" comes from the --tools help text.
@@ -188,7 +188,7 @@ _CLAUDE_TOOL_NAMES=(
   Monitor MultiEdit
   NotebookEdit NotebookRead
   ObserverReport OfferChromeSetup
-  PowerShell Projects PushNotification
+  PowerShell Projects PublishPlugin PushNotification
   REPL Read ReadMcpResourceDirTool ReadMcpResourceTool ReadNotifications
   RefreshMcpTools RemoteTrigger ReportFindings
   ScheduleWakeup SearchMcpRegistry SearchPlugins SearchSkills
@@ -602,7 +602,7 @@ _claude_complete()
   # Flag and slash command argument value completions
   case "$value_flag" in
     --advisor|--model|--fallback-model|--judge-model|/model)
-      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku fable sonnet[1m] opus[1m] fable[1m] opusplan claude-fable-5-1 claude-fable-5-1[1m] claude-fable-5 claude-fable-5[1m] claude-opus-5-5 claude-opus-5-5[1m] claude-opus-5 claude-opus-5[1m] claude-sonnet-5-5 claude-sonnet-5-5[1m] claude-sonnet-5 claude-sonnet-5[1m] claude-opus-4-8 claude-opus-4-8[1m] claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
+      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku fable sonnet[1m] opus[1m] fable[1m] opusplan claude-fable-5-1 claude-fable-5-1[1m] claude-fable-5 claude-fable-5[1m] claude-opus-5-5 claude-opus-5-5[1m] claude-opus-5 claude-opus-5[1m] claude-sonnet-5-5 claude-sonnet-5-5[1m] claude-sonnet-5 claude-sonnet-5[1m] claude-haiku-5-5 claude-haiku-5-5[1m] claude-opus-4-8 claude-opus-4-8[1m] claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
       return 0
       ;;
     --output-format)
@@ -852,7 +852,7 @@ _claude_complete()
             fi
             ;;
           init|new) _claude_reply_subcommand "$cur" "--author --author-email --description -f --force --with -h --help" "" ;;
-          install|i) _claude_reply_subcommand "$cur" "--accept-command --config --json --registry -s --scope -y --yes -h --help" "" ;;
+          install|i) _claude_reply_subcommand "$cur" "--accept-command --config --json --marketplace --registry -s --scope -y --yes -h --help" "" ;;
           disable) _claude_reply_subcommand "$cur" "-a --all --json -s --scope -h --help" "" ;;
           enable) _claude_reply_subcommand "$cur" "--json -s --scope -h --help" "" ;;
           update) _claude_reply_subcommand "$cur" "--accept-command --json -s --scope -y --yes -h --help" "" ;;

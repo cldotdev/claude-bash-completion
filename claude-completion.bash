@@ -47,11 +47,11 @@ _claude_discover_commands() {
   done
 }
 
-# Built-in slash commands (133 commands as of v2.1.293)
+# Built-in slash commands (134 commands as of v2.1.321)
 _CLAUDE_BUILTIN_COMMANDS=(
   /add-dir /advisor /allowed-tools /android
   /artifact-capabilities /artifact-design /artifact-diagramming /artifacts
-  /autocompact /autofix-pr
+  /auto-mode-setup /autocompact /autofix-pr
   /background /bashes /batch /bg /branch /brief /btw /bug
   /cd /checkpoint /checkup /chrome /claude-api /claude-in-chrome /clear /code-review /color
   /compact /config /context /continue /copy /cost
@@ -77,7 +77,7 @@ _CLAUDE_BUILTIN_COMMANDS=(
   /verify /voice /web-setup /workflow-authoring /workflows
 )
 
-# CLI flags (82 flags as of v2.1.293)
+# CLI flags (82 flags as of v2.1.321)
 _CLAUDE_FLAGS=(
   --add-dir --advisor
   --agent --agents
@@ -119,7 +119,7 @@ _CLAUDE_FLAGS=(
   -w --worktree
 )
 
-# CLI subcommands (26 subcommands as of v2.1.293)
+# CLI subcommands (26 subcommands as of v2.1.321)
 _CLAUDE_SUBCOMMANDS=(
   agents attach auth auto-mode daemon doctor gateway import install kill
   logs mcp plugin plugins project purge rc remote-control respawn rm
@@ -150,7 +150,8 @@ _CLAUDE_VALUE_FLAGS=(
   --add-dir --advisor --agent --agents --allowedTools --allowed-tools
   --append-subagent-system-prompt-file
   --append-system-prompt --append-system-prompt-file --autocompact
-  --betas --cloud -d --debug --debug-file --disallowedTools --disallowed-tools
+  --betas --cloud -d --debug --debug-file --disallow-tools
+  --disallowedTools --disallowed-tools
   --effort --environment --fallback-model --file --from-pr
   --input-format --json-schema --max-budget-usd --mcp-config --model
   -n --name --output-format --permission-mode --permission-prompt-tool
@@ -166,12 +167,12 @@ _CLAUDE_VALUE_FLAGS=(
 # belongs to the flag, so the flag governs completion until the next one appears.
 _CLAUDE_VARIADIC_FLAGS=(
   --add-dir --allowedTools --allowed-tools --betas
-  --disallowedTools --disallowed-tools --file --tools
+  --disallow-tools --disallowedTools --disallowed-tools --file --tools
 )
 
 # Built-in tool names accepted by --tools, --allowedTools, and --disallowedTools.
 # `claude --help` carries no listing and the CLI accepts unknown names without
-# complaint, so this mirrors the name constants in the v2.1.293 binary: the
+# complaint, so this mirrors the name constants in the v2.1.321 binary: the
 # strings it defines and then passes as a tool's `name`. MCP and
 # self-hosted-runner tools are left out: those names come from a connected
 # server, not from the build. "default" comes from the --tools help text.
@@ -190,13 +191,14 @@ _CLAUDE_TOOL_NAMES=(
   ObserverReport OfferChromeSetup
   PowerShell Projects PublishPlugin PushNotification
   REPL Read ReadMcpResourceDirTool ReadMcpResourceTool ReadNotifications
-  RefreshMcpTools RemoteTrigger ReportFindings
+  ReadWidgetContext RefreshMcpTools RemoteTrigger ReportFindings
   ScheduleWakeup SearchMcpRegistry SearchPlugins SearchSkills
-  SendFeedback SendFile SendMessage SendUserFile SendUserMessage
+  SendFeedback SendFile SendMessage SendToProject SendToProjectContext
+  SendUserFile SendUserMessage
   Skill SubagentHandback SuggestConnectors SuggestPluginInstall SuggestSkills
   Task TaskCreate TaskGet TaskList TaskStop TaskUpdate
   TodoWrite ToolSearch
-  WaitForMcpServers WebBrowser WebFetch WebSearch Workflow Write
+  WaitForMcpServers WebBrowser WebFetch WebSearch Workflow WrapUp Write
   default
 )
 
@@ -212,7 +214,8 @@ _CLAUDE_MCP_SUBCOMMANDS=(
 )
 _CLAUDE_PLUGIN_CLI_SUBCOMMANDS=(
   autoremove configure details disable enable eval i init install list
-  marketplace new prune remove tag test uninstall update validate
+  marketplace new prune remove restore-set-aside tag test uninstall update
+  validate
 )
 _CLAUDE_PLUGIN_CLI_MARKETPLACE_SUBCOMMANDS=(add list remove rm update)
 # `claude project purge` is the old name of `claude purge` and still runs.
@@ -602,7 +605,7 @@ _claude_complete()
   # Flag and slash command argument value completions
   case "$value_flag" in
     --advisor|--model|--fallback-model|--judge-model|/model)
-      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku fable sonnet[1m] opus[1m] fable[1m] opusplan claude-fable-5-1 claude-fable-5-1[1m] claude-fable-5 claude-fable-5[1m] claude-opus-5-5 claude-opus-5-5[1m] claude-opus-5 claude-opus-5[1m] claude-sonnet-5-5 claude-sonnet-5-5[1m] claude-sonnet-5 claude-sonnet-5[1m] claude-haiku-5-5 claude-haiku-5-5[1m] claude-opus-4-8 claude-opus-4-8[1m] claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
+      mapfile -t COMPREPLY < <(compgen -W "default best sonnet opus haiku fable sonnet[1m] opus[1m] fable[1m] opusplan claude-fable-5-2 claude-fable-5-2[1m] claude-fable-5-1 claude-fable-5-1[1m] claude-fable-5 claude-fable-5[1m] claude-opus-5-5 claude-opus-5-5[1m] claude-opus-5 claude-opus-5[1m] claude-sonnet-5-5 claude-sonnet-5-5[1m] claude-sonnet-5 claude-sonnet-5[1m] claude-haiku-5-5 claude-haiku-5-5[1m] claude-opus-4-8 claude-opus-4-8[1m] claude-opus-4-7 claude-opus-4-7[1m] claude-opus-4-6 claude-opus-4-6[1m] claude-sonnet-4-6 claude-sonnet-4-6[1m] claude-haiku-4-5 claude-haiku-4-5-20251001" -- "$cur")
       return 0
       ;;
     --output-format)
@@ -639,7 +642,8 @@ _claude_complete()
       _claude_reply_ordered "auto 100k 200k 500k 1m" "$cur"
       return 0
       ;;
-    --tools|--allowedTools|--allowed-tools|--disallowedTools|--disallowed-tools)
+    --tools|--allowedTools|--allowed-tools|--disallowedTools|--disallowed-tools|\
+    --disallow-tools)
       mapfile -t COMPREPLY < <(compgen -W "${_CLAUDE_TOOL_NAMES[*]}" -- "$cur")
       return 0
       ;;
@@ -697,7 +701,7 @@ _claude_complete()
       ;;
     --mcp-config|--system-prompt-file|--append-system-prompt-file|\
     --append-subagent-system-prompt-file|--settings|--debug-file|\
-    --drain-marker-file)
+    --drain-marker-file|--hold-idle-file)
       _claude_filedir
       return 0
       ;;
@@ -787,7 +791,7 @@ _claude_complete()
         return 0
         ;;
       import)
-        _claude_reply_subcommand "$cur" "--dry-run --yes -h --help" "codex gemini"
+        _claude_reply_subcommand "$cur" "--dry-run --yes -h --help" "codex cursor gemini"
         return 0
         ;;
       install)
@@ -830,6 +834,10 @@ _claude_complete()
             mapfile -t COMPREPLY < <(compgen -W "record off" -- "$cur")
             return 0
             ;;
+          --profile)
+            mapfile -t COMPREPLY < <(compgen -W "directory" -- "$cur")
+            return 0
+            ;;
         esac
         if [[ "$sub" == "marketplace" || "$sub" == "eval" ]]; then
           _claude_find_word $((sub_idx + 1)) "${words[@]:0:cword}" && nested="$_claude_word"
@@ -848,7 +856,7 @@ _claude_complete()
             if [[ "$nested" == "init" ]]; then
               _claude_reply_subcommand "$cur" "--bare --eval-dir -i --interactive -h --help"
             else
-              _claude_reply_subcommand "$cur" "--ablation --allow-real-servers --allow-tools --case -j --concurrency --eval-dir --json --judge-model --keep-temp --max-cost-usd --mocks --model --no-publish --no-scaffold --output-dir --publish-report --report --runs --scaffold --tag --threshold --trust-plugin --verbose -h --help" "init"
+              _claude_reply_subcommand "$cur" "--ablation --allow-real-servers --allow-tools --case -j --concurrency --disallow-tools --eval-dir --json --judge-model --keep-temp --max-cost-usd --mocks --model --no-publish --no-scaffold --output-dir --publish-report --report --runs --scaffold --tag --threshold --trust-plugin --verbose -h --help" "init"
             fi
             ;;
           init|new) _claude_reply_subcommand "$cur" "--author --author-email --description -f --force --with -h --help" "" ;;
@@ -860,7 +868,8 @@ _claude_complete()
           prune|autoremove) _claude_reply_subcommand "$cur" "--dry-run -s --scope -y --yes -h --help" "" ;;
           tag) _claude_reply_subcommand "$cur" "--dry-run -f --force -m --message --push --remote -h --help" "" ;;
           uninstall|remove) _claude_reply_subcommand "$cur" "--json --keep-data --prune -s --scope -y --yes -h --help" "" ;;
-          validate) _claude_reply_subcommand "$cur" "--json --strict -h --help" "" ;;
+          restore-set-aside) _claude_reply_subcommand "$cur" "--discard -h --help" "" ;;
+          validate) _claude_reply_subcommand "$cur" "--json --profile --strict -h --help" "" ;;
           configure) _claude_reply_subcommand "$cur" "--json --values-stdin -h --help" "" ;;
           details|test) _claude_reply_subcommand "$cur" "-h --help" "" ;;
           *) _claude_reply_subcommand "$cur" "-h --help" "${_CLAUDE_PLUGIN_CLI_SUBCOMMANDS[*]}" ;;
@@ -885,7 +894,7 @@ _claude_complete()
             return 0
             ;;
         esac
-        _claude_reply_subcommand "$cur" "--capacity --chrome -c --continue --create-session-in-dir -d --debug --debug-file --name --no-chrome --no-create-session-in-dir --permission-mode --remote-control-session-name-prefix --session-id --spawn -v --verbose -h --help"
+        _claude_reply_subcommand "$cur" "--capacity --chrome -c --continue --create-session-in-dir -d --debug --debug-file --name --no-chrome --no-create-session-in-dir --permission-mode --remote-control-session-name-prefix --session-id --settings --spawn -v --verbose -h --help"
         return 0
         ;;
       respawn)
@@ -898,16 +907,24 @@ _claude_complete()
             mapfile -t COMPREPLY < <(compgen -W "disk memory" -- "$cur")
             return 0
             ;;
+          --confine-repo-settings)
+            mapfile -t COMPREPLY < <(compgen -W "warn enforce off" -- "$cur")
+            return 0
+            ;;
+          --server-auto-mode-lists)
+            mapfile -t COMPREPLY < <(compgen -W "all no-allow none" -- "$cur")
+            return 0
+            ;;
         esac
         case "$sub" in
-          orchestrator) _claude_reply_subcommand "$cur" "--api-url --debug-dir --environment-secret-file --expected-spawn-seconds --health-port --hook-concurrency --hook-timeout --hooks-dir --log-level --min-idle --scm-connector-ca-file --scm-connector-host --scm-connector-host-rewrite --scm-connector-id --scm-connector-provider -h --help" "" ;;
+          orchestrator) _claude_reply_subcommand "$cur" "--agent-proxy-url --api-url --debug-dir --environment-secret-file --expected-spawn-seconds --health-port --hook-concurrency --hook-timeout --hooks-dir --log-level --min-idle --scm-connector-ca-file --scm-connector-host --scm-connector-host-rewrite --scm-connector-id --scm-connector-provider --shutdown-drain-sec -h --help" "" ;;
           doctor|setup) _claude_reply_subcommand "$cur" "-h --help" "" ;;
-          *) _claude_reply_subcommand "$cur" "--api-url --base-dir --capacity --client-label --configure-git --confine-repo-settings --debug-token-dir --defer-shutdown-max-min --drain-grace-sec --drain-marker-file --drain-wait-sec --environment-secret-file --exec-path --exit-if-unused-min --git-host-rewrite --git-ssh-rewrite --health-port --hooks-dir --host-config-snapshot --kill-session-after-min --lock-to-account --log-file --log-level --post-session-hook-timeout-sec --proxy-authorization-command --proxy-authorization-file --push-outcome-on-release --release-idle-session-min --remove-session-state --retire-at --session-stop-grace-sec --startup-timeout-min --trust-workspace --use-anthropic-git-proxy -h --help" "${_CLAUDE_SELF_HOSTED_RUNNER_SUBCOMMANDS[*]}" ;;
+          *) _claude_reply_subcommand "$cur" "--agent-proxy-url --api-url --base-dir --capacity --checkout-hook-timeout-min --client-label --configure-git --confine-repo-settings --debug-token-dir --defer-shutdown-max-min --diff-finds-nested-repository --drain-grace-sec --drain-marker-file --drain-wait-sec --environment-secret-file --exec-path --exit-if-unused-min --git-host-rewrite --git-ssh-rewrite --health-port --hold-idle-file --hooks-dir --host-config-snapshot --kill-session-after-min --lock-to-account --log-file --log-level --max-hold-min --post-session-hook-timeout-sec --proxy-authorization-command --proxy-authorization-file --push-outcome-on-release --release-idle-session-min --remove-session-state --retire-at --server-auto-mode-lists --session-stop-grace-sec --startup-timeout-min --trust-workspace --use-anthropic-git-proxy -h --help" "${_CLAUDE_SELF_HOSTED_RUNNER_SUBCOMMANDS[*]}" ;;
         esac
         return 0
         ;;
       ultrareview)
-        _claude_reply_subcommand "$cur" "--json --no-post --post --timeout -h --help"
+        _claude_reply_subcommand "$cur" "--json --no-post --post --timeout --trust-workspace -h --help"
         return 0
         ;;
     esac

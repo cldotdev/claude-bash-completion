@@ -124,6 +124,13 @@ setup() {
   [[ "$joined" == *"default"* ]]
 }
 
+@test "--model completes with claude-fable-5-2 and its 1M variant" {
+  _simulate_completion "claude" "--model" "" -- 2
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" claude-fable-5-2 "* ]]
+  [[ "$joined" == *" claude-fable-5-2[1m] "* ]]
+}
+
 @test "--model completes with claude-fable-5-1 and its 1M variant" {
   _simulate_completion "claude" "--model" "" -- 2
   local joined=" ${COMPREPLY[*]} "
@@ -422,8 +429,8 @@ setup() {
   [[ "$joined" == *" /rate-limit-options "* ]]
 }
 
-@test "_CLAUDE_BUILTIN_COMMANDS array has 133 entries" {
-  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 133 ]]
+@test "_CLAUDE_BUILTIN_COMMANDS array has 134 entries" {
+  [[ "${#_CLAUDE_BUILTIN_COMMANDS[@]}" -eq 134 ]]
 }
 
 @test "/artifact-diagramming is in builtin commands" {
@@ -534,6 +541,18 @@ setup() {
 @test "/artifacts is in builtin commands" {
   local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
   [[ "$joined" == *" /artifacts "* ]]
+}
+
+@test "/auto-mode-setup is in builtin commands" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" == *" /auto-mode-setup "* ]]
+}
+
+@test "commands gated off by default are not in builtin commands" {
+  local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" != *" /project "* ]]
+  [[ "$joined" != *" /send-to-project "* ]]
+  [[ "$joined" != *" /use-case "* ]]
 }
 
 @test "/autocompact is in builtin commands" {
@@ -790,6 +809,18 @@ setup() {
   [[ "$joined" == *" test "* ]]
 }
 
+@test "claude plugin completes with restore-set-aside" {
+  _simulate_completion "claude" "plugin" "res" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "restore-set-aside" ]]
+}
+
+@test "claude plugin restore-set-aside completes with --discard" {
+  _simulate_completion "claude" "plugin" "restore-set-aside" "--d" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--discard" ]]
+}
+
 @test "claude plugin configure completes with --values-stdin" {
   _simulate_completion "claude" "plugin" "configure" "--v" -- 3
   [[ "${#COMPREPLY[@]}" -eq 1 ]]
@@ -951,6 +982,18 @@ setup() {
   [[ "${COMPREPLY[0]}" == "--json" ]]
 }
 
+@test "claude plugin validate completes with --profile" {
+  _simulate_completion "claude" "plugin" "validate" "--p" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--profile" ]]
+}
+
+@test "claude plugin validate --profile completes with the catalog profile" {
+  _simulate_completion "claude" "plugin" "validate" "--profile" "" -- 4
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "directory" ]]
+}
+
 @test "claude plugin marketplace add completes with --claudeai" {
   _simulate_completion "claude" "plugin" "marketplace" "add" "--cl" -- 4
   [[ "${#COMPREPLY[@]}" -eq 1 ]]
@@ -982,6 +1025,24 @@ setup() {
   _simulate_completion "claude" "plugin" "eval" "--trust" -- 3
   [[ "${#COMPREPLY[@]}" -eq 1 ]]
   [[ "${COMPREPLY[0]}" == "--trust-plugin" ]]
+}
+
+@test "claude plugin eval completes with --disallow-tools" {
+  _simulate_completion "claude" "plugin" "eval" "--dis" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--disallow-tools" ]]
+}
+
+@test "claude plugin eval --disallow-tools completes with tool names" {
+  _simulate_completion "claude" "plugin" "eval" "--disallow-tools" "Agent" "TaskS" -- 5
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "TaskStop" ]]
+}
+
+@test "claude plugin eval init is found past a --disallow-tools value" {
+  _simulate_completion "claude" "plugin" "eval" "--disallow-tools" "Agent" "--json" "init" "--ba" -- 7
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--bare" ]]
 }
 
 @test "claude plugin eval --mocks completes with mock modes" {
@@ -1031,9 +1092,10 @@ setup() {
 
 @test "claude import completes with agent sources" {
   _simulate_completion "claude" "import" "" -- 2
-  [[ "${#COMPREPLY[@]}" -eq 2 ]]
+  [[ "${#COMPREPLY[@]}" -eq 3 ]]
   local joined=" ${COMPREPLY[*]} "
   [[ "$joined" == *" codex "* ]]
+  [[ "$joined" == *" cursor "* ]]
   [[ "$joined" == *" gemini "* ]]
 }
 
@@ -1047,9 +1109,10 @@ setup() {
 
 @test "claude remote-control completes with its own flags" {
   _simulate_completion "claude" "remote-control" "--s" -- 2
-  [[ "${#COMPREPLY[@]}" -eq 2 ]]
+  [[ "${#COMPREPLY[@]}" -eq 3 ]]
   local joined=" ${COMPREPLY[*]} "
   [[ "$joined" == *" --session-id "* ]]
+  [[ "$joined" == *" --settings "* ]]
   [[ "$joined" == *" --spawn "* ]]
 }
 
@@ -1100,6 +1163,55 @@ setup() {
   [[ "${COMPREPLY[0]}" == "--client-label" ]]
 }
 
+@test "claude self-hosted-runner completes with its hold, proxy, and checkout flags" {
+  _simulate_completion "claude" "self-hosted-runner" "--hold" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--hold-idle-file" ]]
+  _simulate_completion "claude" "self-hosted-runner" "--max-h" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--max-hold-min" ]]
+  _simulate_completion "claude" "self-hosted-runner" "--agent" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--agent-proxy-url" ]]
+  _simulate_completion "claude" "self-hosted-runner" "--check" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--checkout-hook-timeout-min" ]]
+  _simulate_completion "claude" "self-hosted-runner" "--diff" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--diff-finds-nested-repository" ]]
+  _simulate_completion "claude" "self-hosted-runner" "--serv" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--server-auto-mode-lists" ]]
+}
+
+@test "claude self-hosted-runner --server-auto-mode-lists completes with list modes" {
+  _simulate_completion "claude" "self-hosted-runner" "--server-auto-mode-lists" "" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 3 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" all "* ]]
+  [[ "$joined" == *" no-allow "* ]]
+  [[ "$joined" == *" none "* ]]
+}
+
+@test "claude self-hosted-runner --confine-repo-settings completes with guard modes" {
+  _simulate_completion "claude" "self-hosted-runner" "--confine-repo-settings" "" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 3 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" warn "* ]]
+  [[ "$joined" == *" enforce "* ]]
+  [[ "$joined" == *" off "* ]]
+}
+
+@test "claude self-hosted-runner --hold-idle-file completes with paths" {
+  touch "$BATS_TEST_TMPDIR/hold-marker"
+  # bash-completion's filedir calls compopt, which fails outside a live
+  # completion such as this simulated one, so stub it out.
+  compopt() { :; }
+  _simulate_completion "claude" "self-hosted-runner" "--hold-idle-file" "$BATS_TEST_TMPDIR/hold-m" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "$BATS_TEST_TMPDIR/hold-marker" ]]
+}
+
 @test "claude self-hosted-runner completes with its sub-subcommands" {
   _simulate_completion "claude" "self-hosted-runner" "" -- 2
   [[ "${#COMPREPLY[@]}" -eq 3 ]]
@@ -1115,6 +1227,12 @@ setup() {
   local joined=" ${COMPREPLY[*]} "
   [[ "$joined" == *" --hook-concurrency "* ]]
   [[ "$joined" == *" --hook-timeout "* ]]
+  _simulate_completion "claude" "self-hosted-runner" "orchestrator" "--shut" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--shutdown-drain-sec" ]]
+  _simulate_completion "claude" "self-hosted-runner" "orchestrator" "--agent" -- 3
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--agent-proxy-url" ]]
 }
 
 @test "claude self-hosted-runner --host-config-snapshot completes with snapshot modes" {
@@ -1132,8 +1250,14 @@ setup() {
   [[ "${#COMPREPLY[@]}" -eq 0 ]]
 }
 
+@test "claude ultrareview completes with --trust-workspace" {
+  _simulate_completion "claude" "ultrareview" "--tr" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--trust-workspace" ]]
+}
+
 @test "subcommand flags replace the global flag list" {
-  _simulate_completion "claude" "ultrareview" "--t" -- 2
+  _simulate_completion "claude" "ultrareview" "--ti" -- 2
   [[ "${#COMPREPLY[@]}" -eq 1 ]]
   [[ "${COMPREPLY[0]}" == "--timeout" ]]
 }
@@ -1197,6 +1321,20 @@ setup() {
   [[ "${COMPREPLY[0]}" == "PublishPlugin" ]]
 }
 
+@test "SendToProject, ReadWidgetContext, and WrapUp complete with --tools" {
+  _simulate_completion "claude" "--tools" "SendToP" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 2 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" SendToProject "* ]]
+  [[ "$joined" == *" SendToProjectContext "* ]]
+  _simulate_completion "claude" "--tools" "ReadW" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "ReadWidgetContext" ]]
+  _simulate_completion "claude" "--tools" "Wra" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "WrapUp" ]]
+}
+
 @test "tools the build no longer defines are not in tool names" {
   local joined=" ${_CLAUDE_TOOL_NAMES[*]} "
   [[ "$joined" != *" Snip "* ]]
@@ -1215,7 +1353,7 @@ setup() {
 
 @test "variadic flags keep completing past their first value" {
   _simulate_completion "claude" "--tools" "Bash" "Rea" -- 3
-  [[ "${#COMPREPLY[@]}" -eq 4 ]]
+  [[ "${#COMPREPLY[@]}" -eq 5 ]]
   local joined=" ${COMPREPLY[*]} "
   [[ "$joined" == *" Read "* ]]
   [[ "$joined" == *" ReadMcpResourceTool "* ]]

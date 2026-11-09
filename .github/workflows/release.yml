@@ -1,11 +1,11 @@
 ---
 name: Release
 
-# Tags are unprefixed, and all three components are anchored so that a
-# prerelease tag such as 0.3.3-rc1 does not ship a release.
+# Tags carry a v prefix, and all three components are anchored so that a
+# prerelease tag such as v0.3.3-rc1 does not ship a release.
 on:
   push:
-    tags: ['[0-9]+.[0-9]+.[0-9]+']
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
 
 permissions:
   contents: write

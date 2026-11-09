@@ -73,3 +73,7 @@ How to update the `--model` and `--fallback-model` value completions when Anthro
 
 - `bats tests/completion.bats` -- all tests pass.
 - `bash -c 'source claude-completion.bash; COMP_WORDS=(claude --model ""); COMP_CWORD=2; COMPREPLY=(); _claude_bash_completion; printf "%s\n" "${COMPREPLY[@]}"'` lists the expected model IDs.
+
+## Release Tags
+
+Name release tags `vX.Y.Z`, such as `v0.3.11`. Tags up to `0.3.10` predate the prefix and keep their bare names.

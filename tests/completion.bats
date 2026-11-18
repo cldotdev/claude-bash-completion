@@ -144,6 +144,20 @@ setup() {
   [[ "$joined" == *" claude-fable-5 "* ]]
 }
 
+@test "--model completes with the claude-mythos IDs and their 1M variants, with no mythos alias" {
+  _simulate_completion "claude" "--model" "claude-mythos" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 6 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" claude-mythos-5-2 "* ]]
+  [[ "$joined" == *" claude-mythos-5-2[1m] "* ]]
+  [[ "$joined" == *" claude-mythos-5-1 "* ]]
+  [[ "$joined" == *" claude-mythos-5-1[1m] "* ]]
+  [[ "$joined" == *" claude-mythos-5 "* ]]
+  [[ "$joined" == *" claude-mythos-5[1m] "* ]]
+  _simulate_completion "claude" "--model" "myth" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 0 ]]
+}
+
 @test "--model completes with claude-sonnet-5" {
   _simulate_completion "claude" "--model" "" -- 2
   local joined="${COMPREPLY[*]}"
@@ -550,8 +564,11 @@ setup() {
 
 @test "commands gated off by default are not in builtin commands" {
   local joined=" ${_CLAUDE_BUILTIN_COMMANDS[*]} "
+  [[ "$joined" != *" /cloud-plugins "* ]]
   [[ "$joined" != *" /project "* ]]
+  [[ "$joined" != *" /restart "* ]]
   [[ "$joined" != *" /send-to-project "* ]]
+  [[ "$joined" != *" /update "* ]]
   [[ "$joined" != *" /use-case "* ]]
 }
 
@@ -972,8 +989,7 @@ setup() {
   [[ "${#COMPREPLY[@]}" -eq 1 ]]
   [[ "${COMPREPLY[0]}" == "--marketplace" ]]
   _simulate_completion "claude" "plugin" "install" "--reg" -- 3
-  [[ "${#COMPREPLY[@]}" -eq 1 ]]
-  [[ "${COMPREPLY[0]}" == "--registry" ]]
+  [[ "${#COMPREPLY[@]}" -eq 0 ]]
 }
 
 @test "claude plugin validate completes with --json" {
@@ -1184,6 +1200,18 @@ setup() {
   [[ "${COMPREPLY[0]}" == "--server-auto-mode-lists" ]]
 }
 
+@test "claude self-hosted-runner completes with its nested-model and gh flags" {
+  _simulate_completion "claude" "self-hosted-runner" "--nested" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 3 ]]
+  local joined=" ${COMPREPLY[*]} "
+  [[ "$joined" == *" --nested-model-access "* ]]
+  [[ "$joined" == *" --nested-model-allow "* ]]
+  [[ "$joined" == *" --nested-model-call-budget "* ]]
+  _simulate_completion "claude" "self-hosted-runner" "--use-anthropic-gh" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "--use-anthropic-gh" ]]
+}
+
 @test "claude self-hosted-runner --server-auto-mode-lists completes with list modes" {
   _simulate_completion "claude" "self-hosted-runner" "--server-auto-mode-lists" "" -- 3
   [[ "${#COMPREPLY[@]}" -eq 3 ]]
@@ -1333,6 +1361,18 @@ setup() {
   _simulate_completion "claude" "--tools" "Wra" -- 2
   [[ "${#COMPREPLY[@]}" -eq 1 ]]
   [[ "${COMPREPLY[0]}" == "WrapUp" ]]
+}
+
+@test "GetGoal, PauseGoal, and SetGoal complete with --tools" {
+  _simulate_completion "claude" "--tools" "GetG" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "GetGoal" ]]
+  _simulate_completion "claude" "--tools" "PauseG" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "PauseGoal" ]]
+  _simulate_completion "claude" "--tools" "SetG" -- 2
+  [[ "${#COMPREPLY[@]}" -eq 1 ]]
+  [[ "${COMPREPLY[0]}" == "SetGoal" ]]
 }
 
 @test "tools the build no longer defines are not in tool names" {
